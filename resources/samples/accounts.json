@@ -1,0 +1,1122 @@
+[{
+	"accountNumber": "1",
+	"denomination": "ATIVO",
+	"level": 1,
+	"currency": "brl"
+}, {
+	"accountNumber": "11",
+	"denomination": "ATIVO CIRCULANTE",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "211301",
+	"denomination": "Provisão Salario",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211302",
+	"denomination": "Provisão Agua",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334201",
+	"denomination": "Falta/Sobra Caixa",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211303",
+	"denomination": "Provisão Pro Labore",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "111104",
+	"denomination": "Caixa (Dolar)",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "111105",
+	"denomination": "Caixa (Guarani)",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3136",
+	"denomination": "Receita de Serviços",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "111108",
+	"denomination": "Fundo de Caixa",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211305",
+	"denomination": "Provisão Gratificação",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211306",
+	"denomination": "Provisão Taxas e Alvarás",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211307",
+	"denomination": "Provisão Informática",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211308",
+	"denomination": "Provisão FGTS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332607",
+	"denomination": "Honorários e Consultorias",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211309",
+	"denomination": "Provisão Cont. Sindical",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211310",
+	"denomination": "Provisão Medicina Trabalho",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211311",
+	"denomination": "Provisão Telefone",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211312",
+	"denomination": "Provisão Cartão Ponto",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211313",
+	"denomination": "Provisão Manutenção",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211314",
+	"denomination": "Provisão INSS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211315",
+	"denomination": "Provisão Sistema Touch",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211316",
+	"denomination": "Provisão Simples",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211317",
+	"denomination": "Previsão IR s/Aluguel",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334206",
+	"denomination": "Despesas Diversas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211318",
+	"denomination": "Provisão Aluguel",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211319",
+	"denomination": "Provisão Honorários Contabeis",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211101",
+	"denomination": "FORNECEDORES",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321101",
+	"denomination": "CMV Alimentos - Grupo Não Pereciveis",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321201",
+	"denomination": "CMV Bebidas e Cigarros - Grupo Bebidas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334205",
+	"denomination": "Gasolina / Mototaxi",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "241101",
+	"denomination": "Capital",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332506",
+	"denomination": "Imposto de Renda",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332706",
+	"denomination": "TV por Assinatura",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332901",
+	"denomination": "Material de Uso e Consumo",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332902",
+	"denomination": "Material de Expediente",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332903",
+	"denomination": "Material de Higiene e Limpeza",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332904",
+	"denomination": "Louças e Guarnições",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332905",
+	"denomination": "Bens de Valores Não Mensuraveis",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "333101",
+	"denomination": "Taxa Adm de Cartões",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "333401",
+	"denomination": "Multas e Encargos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "333501",
+	"denomination": "Prejuizos Cambiais",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "341101",
+	"denomination": "Lucro Liquido do Exercicio",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "313101",
+	"denomination": "Estornos e Correções",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1111",
+	"denomination": "Caixa",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "111106",
+	"denomination": "Caixa (Pesos)",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1112",
+	"denomination": "Bancos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "111203",
+	"denomination": "Cartões a Receber",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "112",
+	"denomination": "CRÉDITOS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "1121",
+	"denomination": "Créditos a Receber",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "112101",
+	"denomination": "Clientes",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "112102",
+	"denomination": "Receitas Provisionadas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "112302",
+	"denomination": "Adiantamentos a Funcionários",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1123",
+	"denomination": "Adiantamentos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "112301",
+	"denomination": "Adiantamento a Fornecedores",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "113",
+	"denomination": "ESTOQUES",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "1131",
+	"denomination": "Estoque de Revenda",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "113101",
+	"denomination": "ESTOQUE",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "313602",
+	"denomination": "Reembolso Taxa de Serviços",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "111107",
+	"denomination": "Caixa (Euro)",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "13",
+	"denomination": "ATIVO PERMANENTE",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "131",
+	"denomination": "INVESTIMENTOS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "132",
+	"denomination": "IMOBILIZADO",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "1321",
+	"denomination": "Computadores e Periféricos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "132101",
+	"denomination": "Computadores e Periféricos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "132102",
+	"denomination": "(-)Depreciação Acumulada Comp E Per",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1322",
+	"denomination": "Maquinas e Equipamentos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "132201",
+	"denomination": "Maquinas e Equipamentos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "132202",
+	"denomination": "(-)Depreciação Acumulada Máq e Equip",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1323",
+	"denomination": "Moveis e Utensilios",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "132301",
+	"denomination": "Moveis e Utensilios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "132302",
+	"denomination": "(-)Depreciação Acumulada Móveis e Ut",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1324",
+	"denomination": "Benfeitorias em Imóveis de Terceiro",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "132401",
+	"denomination": "Instalações",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "132403",
+	"denomination": "(-)Depreciação Acumulada Benfeitoria",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "2",
+	"denomination": "PASSIVO",
+	"level": 1,
+	"currency": "brl"
+}, {
+	"accountNumber": "21",
+	"denomination": "PASSIVO CIRCULANTE",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "211",
+	"denomination": "OBRIGAÇÕES",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "2111",
+	"denomination": "Fornecedores",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "331106",
+	"denomination": "Descontos Concedidos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "2113",
+	"denomination": "Despesas Provisionadas",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "2114",
+	"denomination": "Bens Provisionados",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332906",
+	"denomination": "Cardápios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332611",
+	"denomination": "Treinamentos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "22",
+	"denomination": "PASSIVO EXIGIVEL A LONGO PRAZO",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "221",
+	"denomination": "OBRIGAÇÕES OPERACIONAIS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "2211",
+	"denomination": "Financiamentos e Empréstimos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "221102",
+	"denomination": "Empréstimos a Pagar Sócios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "24",
+	"denomination": "PATRIMONIO LIQUIDO",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "241",
+	"denomination": "Capital Social",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "242",
+	"denomination": "Lucros ou Prejuízos Acumulados",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "2421",
+	"denomination": "Lucros/Prej. Acumulados",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3",
+	"denomination": "CONTAS DE RESULTADO",
+	"level": 1,
+	"currency": "brl"
+}, {
+	"accountNumber": "31",
+	"denomination": "RECEITAS",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "311",
+	"denomination": "RECEITAS SOBRE VENDAS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3111",
+	"denomination": "Venda de Mercadorias",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "311101",
+	"denomination": "Venda a Vista",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "311102",
+	"denomination": "Venda a Prazo",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "312",
+	"denomination": "RECEITAS FINANCEIRAS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3121",
+	"denomination": "Receitas Financeiras",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "313",
+	"denomination": "OUTRAS RECEITAS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3131",
+	"denomination": "Receitas Eventuais",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "32",
+	"denomination": "CUSTOS DAS VENDAS",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "321",
+	"denomination": "Custos Das Mercadorias Vendidas",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3211",
+	"denomination": "CMV Alimentos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3212",
+	"denomination": "CMV Bebidas",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "33",
+	"denomination": "DESPESAS",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "331",
+	"denomination": "DESPESAS OPERACIONAIS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3311",
+	"denomination": "Despesas com Vendas",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "331101",
+	"denomination": "Comissões Sobre Vendas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "331102",
+	"denomination": "Fretes (Mercadorias)",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "331103",
+	"denomination": "Embalagens e Descartáveis",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "331104",
+	"denomination": "Cortesias Clientes",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332",
+	"denomination": "DESPESAS ADMINISTRATIVAS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3321",
+	"denomination": "Pro Labore",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3322",
+	"denomination": "Folha de Pagamento",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "313102",
+	"denomination": "Devoluções Diversas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332293",
+	"denomination": "Descontos e Retenções Folha",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332294",
+	"denomination": "Empréstimos Desc Folha",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332295",
+	"denomination": "Mensalidade Sindicato",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332296",
+	"denomination": "Contribruição Sindical",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332297",
+	"denomination": "IRRF Sobre Folha",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332298",
+	"denomination": "Refeição Funcionários Folha",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3323",
+	"denomination": "Encargos Sociais",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332301",
+	"denomination": "13o Salário",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332302",
+	"denomination": "FERIAS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332303",
+	"denomination": "FGTS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332304",
+	"denomination": "GPS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332305",
+	"denomination": "Vale Transporte",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332306",
+	"denomination": "Seguro Colaboradores",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3324",
+	"denomination": "Despesas Com Pessoal",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332401",
+	"denomination": "Gratificações",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332402",
+	"denomination": "Funcionários Extras",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332403",
+	"denomination": "Medicina do Trabalho",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332404",
+	"denomination": "Despesas Com Uniformes e EPI's",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3325",
+	"denomination": "Impostos e Taxas",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332501",
+	"denomination": "Simples Nacional",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332502",
+	"denomination": "ECAD",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332503",
+	"denomination": "IPTU",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332504",
+	"denomination": "ICMS - TRIBUTOS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332505",
+	"denomination": "Taxas e Alvarás",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3326",
+	"denomination": "Honorários e Serviços",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332601",
+	"denomination": "Contabilidade",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332603",
+	"denomination": "Técnico em Informática",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332604",
+	"denomination": "Dedetização",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332605",
+	"denomination": "Segurança e Monitoramento",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332606",
+	"denomination": "Publicidade e Propaganda",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3327",
+	"denomination": "Despesas Fixas",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332701",
+	"denomination": "Aluguel",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332702",
+	"denomination": "Energia Elétrica",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332703",
+	"denomination": "Água e Saneamento",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332704",
+	"denomination": "Telefonia",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332705",
+	"denomination": "Gas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3328",
+	"denomination": "Conserto e Manutenção",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332801",
+	"denomination": "Manutenção de Equipamentos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332802",
+	"denomination": "Manutenção de Instalações/Prediais",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332803",
+	"denomination": "Manutenção de Veículos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "3329",
+	"denomination": "Compra de Materiais",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "333",
+	"denomination": "DESPESAS FINANCEIRAS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3331",
+	"denomination": "Taxas Administrativas Cartões",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3332",
+	"denomination": "Despesas Bancárias",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3333",
+	"denomination": "Juros e IOF",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3334",
+	"denomination": "Multa e Encargos",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3335",
+	"denomination": "Prejuízos Cambiais",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "334",
+	"denomination": "OUTRAS DESPESAS",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3342",
+	"denomination": "Outras Despesas",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "3345",
+	"denomination": "Depreciação",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "34",
+	"denomination": "RESULTADO DO EXERCÍCIO",
+	"level": 2,
+	"currency": "brl"
+}, {
+	"accountNumber": "341",
+	"denomination": "Resultado do Exercício",
+	"level": 3,
+	"currency": "brl"
+}, {
+	"accountNumber": "3411",
+	"denomination": "Lucro Líquido do Exercício",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "211325",
+	"denomination": "Provisão Despesas Com Viagem",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "888801",
+	"denomination": "Guaranis",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "888802",
+	"denomination": "Dolares",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "888803",
+	"denomination": "Pesos Argentino",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "312101",
+	"denomination": "Rendimentos de Aplicações Financeiras",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "333201",
+	"denomination": "Tarifas Bancarias - Despesas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "333301",
+	"denomination": "Juros e IOF",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334101",
+	"denomination": "Funcionarios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211399",
+	"denomination": "Provisão Dedetização",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334501",
+	"denomination": "Depreciação",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211321",
+	"denomination": "Provisão Ferias",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211322",
+	"denomination": "Provisão 13 Sal",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211323",
+	"denomination": "Provisão Mat. Exp. Lou",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211324",
+	"denomination": "Provisão IR Folha",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211329",
+	"denomination": "Provisão Energia",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211326",
+	"denomination": "Provisão Taxa de Serviço",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332299",
+	"denomination": "Outros Descontos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "333102",
+	"denomination": "Taxa Aluguel Maquina Cartão",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "888804",
+	"denomination": "Euro",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211327",
+	"denomination": "Provisão Frete",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211328",
+	"denomination": "Provisão Gas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "1124",
+	"denomination": "Emprestimos a Receber",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "112401",
+	"denomination": "Emprestimos a Receber de Sócios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332406",
+	"denomination": "Despesas Colaboradores Diversas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211330",
+	"denomination": "Provisão ECAD",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332307",
+	"denomination": "Vale Alimentação",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211331",
+	"denomination": "Provisão Publicidade Propaganda",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211332",
+	"denomination": "Provisão Vale Alimentação",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "313103",
+	"denomination": "Receitas Diversas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "313601",
+	"denomination": "Taxa de Serviços sobre Vendas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211401",
+	"denomination": "Bens Provisionados",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "2422",
+	"denomination": "Distribuição de Lucros",
+	"level": 4,
+	"currency": "brl"
+}, {
+	"accountNumber": "332407",
+	"denomination": "Cache Apresentações",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "313401",
+	"denomination": "Ganho Cambial",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "312201",
+	"denomination": "Descontos Obtidos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321701",
+	"denomination": "CMV Diversos",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "211333",
+	"denomination": "Provisão TV por assinatura",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332608",
+	"denomination": "Sistema Ponto",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334202",
+	"denomination": "Despesas",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332247",
+	"denomination": "Funcionarios em Experiencia",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "313104",
+	"denomination": "Venda de Mat. Reciclavel",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321102",
+	"denomination": "CMV Alimentos - Grupo Carnes e Peixes",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321103",
+	"denomination": "CMV Alimentos - Grupo Hortifruti",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321104",
+	"denomination": "CMV Alimentos - Grupo Frios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "321105",
+	"denomination": "CMV Alimentos - Grupo Massas",
+	"level": 5,
+	"currency": "brl"
+}, 
+{
+	"accountNumber": "321202",
+	"denomination": "CMV Bebidas e Cigarros - Grupo Cigarros",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "111223",
+	"denomination": "Cartões Débito",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332273",
+	"denomination": "Correções de Salarios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "112305",
+	"denomination": "Diferença Caixa Sócios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "334113",
+	"denomination": "Funcionarios",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "332610",
+	"denomination": "Seguro Predial e Incendio",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "111101",
+	"denomination": "Caixa Central",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "112306",
+	"denomination": "ADTO CLIENTES - RESERVAS",
+	"level": 5,
+	"currency": "brl"
+}, {
+	"accountNumber": "331105",
+	"denomination": "Cortesias Socios e Outros",
+	"level": 5,
+	"currency": "brl"
+}]

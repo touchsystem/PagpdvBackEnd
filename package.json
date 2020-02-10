@@ -1,0 +1,50 @@
+{
+	"name": "touchsystem",
+	"version": "1.0.0",
+	"description": "REST API de TouchSystem escrito en Expressjs + Mongoose + MongoDB",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"aws-sdk": "^2.466.0",
+		"body-parser": "^1.19.0",
+		"connect": "^3.7.0",
+		"connect-timeout": "^1.9.0",
+		"cors": "^2.8.5",
+		"exceljs": "^1.12.0",
+		"express": "^4.16.2",
+		"fast-xml-parser": "^3.11.2",
+		"formidable": "^1.2.0",
+		"helmet": "^3.12.0",
+		"html-pdf": "^2.2.0",
+		"jsonwebtoken": "^8.2.0",
+		"mime-types": "^2.1.18",
+		"moment": "^2.22.0",
+		"mongoose": "^5.5.12",
+		"mongoose-aggregate-paginate": "^1.1.2",
+		"mongoose-paginate": "^5.0.3",
+		"node-input-validator": "^4.2.0",
+		"numeral": "^2.0.6",
+		"onesignal-node": "^1.1.2",
+		"phantom-html2pdf": "^4.0.2",
+		"phantomjs-prebuilt": "^2.1.16",
+		"querystring": "^0.2.0",
+		"request": "^2.88.0",
+		"soap": "^0.24.0",
+		"stream-buffers": "^3.0.1",
+		"tempfile": "^2.0.0",
+		"touchmobile-utils": "^1.0.15",
+		"winston": "^3.0.0-rc5",
+		"yaqrcode": "^0.2.1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/allowski/TouchMobileBackend.git"
+	},
+	"devDependencies": {
+		"nodemon": "^1.18.4"
+	}
+}

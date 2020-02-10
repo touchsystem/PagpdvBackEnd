@@ -1,0 +1,256 @@
+console.log(processedResult, 'process result');
+        if(Object.keys(processedResult).length == 0) {
+            res.send({'status': 0});
+            req.onSend();
+        } else {
+            var PaymentMethods = req.modelFactory.get('PaymentMethods').find({}, (err, result) => {
+                (async () => {
+                    var cashflow = [];
+                    var methodPayments = [];
+                    var netTotal = 0;
+                    // Agregar el total de vendas creditAmount
+                    for(let j = 0; j < result.length; j++) {
+                        methodPayments[result[j]._id] = {"name": result[j].name, "accountNumber": result[j].accountNumber, 'currencyAccount': result[j].currencyAccount};
+                    }
+
+
+                    var amountTotal = salesResults[0].payed - sa
+
+                    cashflow.push({
+                        documentNumber: "",
+                        accountNumber: "311101",
+                        observations: [{
+                            type: "closure",
+                            description: "Vendas a Vista Caixa " + moment(date).format("L")
+                        }],
+                        date: date,
+                        creditAmount: salesResults[0].payed,
+                        debitAmount: 0
+                    });
+
+                    cashflow.push({
+                        documentNumber: "",
+                        accountNumber: "311102",
+                        observations: [{
+                            type: "closure",
+                            description: "Venda a Prazo "  + moment(date).format("L")
+                        }],
+                        date: date,
+                        creditAmount: salesResults[0].unpayed,
+                        debitAmount: 0
+                    });
+
+                    cashflow.push({
+                        documentNumber: "",
+                        accountNumber: "313601",
+                    
+                        observations: [{type: "closure", description: "Taxa de Vendas "+moment(date).format('L')}],
+                        date: date,
+                        creditAmount: salesResults[0].serviceTaxes,
+                        debitAmount: 0
+                    });
+
+
+
+                    for(let j = 0; j < Object.keys(params.payments).length; j++) {
+                        let element = params.payments[j];
+                        var localeMoment = moment(date);
+                        localeMoment.locale('pt-br');
+                        if(element.paid == true) {
+                            cashflow.push({
+                                documentNumber: "",
+                                accountNumber: methodPayments[element._id].accountNumber,
+                                observations: [{"type": "closure", "userId": cashierId, "description": "Venda "+localeMoment.format('L')+" ("+methodPayments[element._id].name+")"}],
+                                date: date,
+                                creditAmount: 0,
+                                debitAmount: element.localCurrencyAmount
+                            });  
+                        } else {
+                            cashflow.push({
+                                documentNumber: "",
+                                accountNumber: "311102",
+                                observations: [{
+                                    type: "closure",
+                                    description: "Vendas a Receber "  + moment(date).format("L")
+                                }],
+                                date: date,
+                                creditAmount: processedResult[0].unpayed,
+                                debitAmount: 0
+                            });
+                        }
+
+
+                        if(methodPayments[element._id].currencyAccount != '0') {
+                            cashflow.push({
+                                documentNumber: "",
+                                accountNumber: methodPayments[element._id].currencyAccount,
+                                observations: [{"type": "closure", "userId": cashierId, "description": "Venda ME "+localeMoment.format('L')+" Auxiliar ("+methodPayments[element._id].name+")"}],
+                                date: date,
+                                creditAmount: 0,
+                                debitAmount: element.amount
+                            });  
+                        }
+                    }
+
+                    netTotal = (processedResult[0].payed - processedResult[0].serviceTaxes);
+                    (params.lack < 0) ? netTotal = netTotal - Math.abs(params.lack) : netTotal = netTotal + Math.abs(params.lack);
+                    for(let j = 0; j < Object.keys(params.payments).length; j++) {
+                        let element = params.payments[j];
+                        var localeMoment = moment(date);
+                        localeMoment.locale('pt-br');
+                        cashflow.push({
+                            documentNumber: "",
+                            accountNumber: methodPayments[element._id].accountNumber,
+                            observations: [{"type": "closure", "userId": cashierId, "description": "Venda "+localeMoment.format('L')+" ("+methodPayments[element._id].name+")"}],
+                            date: date,
+                            creditAmount: 0,
+                            debitAmount: element.localCurrencyAmount
+                        });  
+
+                        if(methodPayments[element._id].currencyAccount != '0') {
+                            cashflow.push({
+                                documentNumber: "",
+                                accountNumber: methodPayments[element._id].currencyAccount,
+                                observations: [{"type": "closure", "userId": cashierId, "description": "Venda ME "+localeMoment.format('L')+" Auxiliar ("+methodPayments[element._id].name+")"}],
+                                date: date,
+                                creditAmount: 0,
+                                debitAmount: element.amount
+                            });  
+                        }
+                    }
+
+    
+
+                    cashflow.push({
+                        documentNumber: "",
+                        accountNumber: "311102",
+                        observations: [{
+                            type: "closure",
+                            description: "Vendas a Receber "  + moment(date).format("L")
+                        }],
+                        date: date,
+                        creditAmount: salesResults[0].unpayed,
+                        debitAmount: 0
+                    });
+
+              
+
+                    cashflow.push({
+                        documentNumber: "", //
+                        accountNumber: "112101",
+                        observations: [{
+                            type: "closure",
+                            description: "Vendas a Receber " + moment(date).format("L")
+                        }],
+                        date: date,
+                        creditAmount: 0,
+                        debitAmount: salesResults[0].unpayed
+                    });
+
+                  
+
+                    cashflow.push({
+                        documentNumber: "",
+                        accountNumber: "313601",
+                    
+                        observations: [{type: "closure", description: "Taxa de Vendas "+moment(date).format('L')}],
+                        date: date,
+                        creditAmount: salesResults[0].serviceTaxes,
+                        debitAmount: 0
+                    });
+
+                    var lack = parseFloat(params.lack);
+                    cashflow.push({
+                        documentNumber: "",
+                        accountNumber: "311101",
+                        observations: [{
+                            type: "closure",
+                            description: "Vendas a Vista Caixa " + moment(date).format("L")
+                        }],
+                        date: date,
+                        creditAmount: netTotal,
+                        debitAmount: 0
+                    });
+
+                  
+
+                    if(typeof params.discount != 'undefined' | params.discount != 0){
+                        cashflow.push({
+                            documentNumber: "",
+                            accountNumber: "331106",
+                            observations: [{"type": "closure", "userId": cashierId, "description": "Desconto Venda "+localeMoment.format('L')}],
+                            date: date,
+                            creditAmount: params.discount,
+                            debitAmount: 0
+                        })
+                        cashflow.push({
+                            documentNumber: "",
+                            accountNumber: "331106",
+                            observations: [{"type": "closure", "userId": cashierId, "description": "Desconto Venda "+localeMoment.format('L')}],
+                            date: date,
+                            creditAmount: 0,
+                            debitAmount: params.discount
+                        })
+                    }
+                    
+                    if(typeof params.lack != 'undefined') {
+                        if(params.lack < 0) {
+                            cashflow.push({
+                                documentNumber: "",
+                                accountNumber: "334201",
+                                observations: [{"type": "closure", "userId": cashierId, "description": "Falta/Sobra Venda "+localeMoment.format('L')}],
+                                date: date,
+                                creditAmount: Math.abs(params.lack),
+                                debitAmount: 0
+                            })
+                        } else {
+                            cashflow.push({
+                                documentNumber: "",
+                                accountNumber: "334201",
+                                observations: [{"type": "closure", "userId": cashierId, "description": "Falta/Sobra Venda "+localeMoment.format('L')}],
+                                date: date,
+                                creditAmount: 0,
+                                debitAmount:  params.lack
+                            })
+                        }
+                    }
+
+                    var cmv = await req.modelFactory.get('Stock').aggregate([
+                        {"$match": {"measure": {"$lt": 0}}},
+                        {"$match": {"date": {"$gte": startDate, "$lte": endDate}}},
+                        {"$project": {
+                            "amount": {"$multiply": ["$unitPrice", "$measure"]},
+                        }},
+                        {"$group": {
+                            "_id": null,
+                            "amount": {"$sum": "$amount"}
+                        }}
+                    ]).exec();
+
+                    if(Object.keys(cmv).length > 0) { 
+                        var obj = {
+                            amount: cmv[0].amount,
+                            date: date,
+                            status: 0
+                        }
+                        var cmv = new req.modelFactory.getModels('CMV').CMV(obj);
+                        cmv.save(function(err, results){
+                            if(err) {
+                                console.error(err);
+                                return next(err);
+                            }
+                        })
+                    }
+
+                    await req.modelFactory.get('Cashflow').insertMany(cashflow, (err, result) => {
+                        if(err) return next(err);
+                    });
+                    console.log('startDate: ', startDate, 'endDate: ',endDate);
+                    await req.modelFactory.get('Sales').updateMany({'isProcessed': false, "date":  {'$gte': startDate, '$lte': endDate}}, {"$set": {"isProcessed": true}}, (err, result) => {
+                        if(err) return next(err);
+                        res.send({'status': 1, "lack": Number(params.lack), "netTotal": processedResult[0].payed + processedResult[0].unpayed - (params.lack * -1)});
+                        req.onSend();
+                    });
+                })();
+            });
+        }

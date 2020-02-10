@@ -1,0 +1,206 @@
+
+{"option2": [
+    {"menuItems": [
+        {
+            "name": "Combo 1",
+            "composition": [
+                {
+                    "name": "Batata Frita", 
+                    "composition": [
+                        {
+                            "id": "88111",
+                            "name": "Batata"
+                        }
+                    ],
+                    "extras": [
+                        {
+                            "id": "99191", 
+                            "name": "Bacon"
+                        }
+                    ]
+                },
+                {   "name": "X-Burger Bacon",
+                    "composition": [
+                        {
+                            "id": "88111",
+                            "name": "Pao"
+                        },
+                        {
+                            "id": "88112",
+                            "name": "Queijo"
+                        },
+                        {
+                            "id": "181811", 
+                            "name": "Carne 150Gr"
+                        }
+                    ],
+                    "extras": [
+                        {
+                            "id": "99191", 
+                            "name": "Bacon"
+                        }
+                    ],
+                    "variants": [
+                        {"parentProduct": "88111", "name": "Pao Integral", "default": true},
+                        {"parentProduct": "88111", "name": "Pao Viena", "default": false},
+                        {"parentProduct": "88111", "name": "Pao 7 Semilhas", "default": false}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Batatas Fritas",
+            "composition": [
+                {"name": "Batata"}
+            ]
+        }
+    ]}
+]},
+
+
+
+{"option1": [
+    {"menuItems": [
+        {
+            "name": "Combo 1",
+            "composition": [
+                {
+                    "name": "Batata Frita", 
+                    "composition": [
+                        {"name": "Batata"}
+                    ]
+                },
+                {   "name": "X-Burger Bacon",
+                    "composition": [
+                        {
+                            "name": "Pao",
+                            "variants": [
+                                {"name": "Pao Integral"},
+                                {"name": "Pao Viena"},
+                                {"name": "Pao 7 Semilhas"}
+                            ]
+                        },
+                        {"name": "Queijo"},
+                        {"name": "Carne 150Gr"}
+                    ],
+                    "extras": [
+                        {"name": "Bacon"}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Batatas Fritas",
+            "composition": [
+                {"name": "Batata"}
+            ]
+        }
+    ]}
+]},
+
+
+Nodos
+var nodes = [
+    { id: 1, parent: 0 },
+    { id: 2, parent: 0 },
+    { id: 3, parent: 1 },
+    { id: 4, parent: 1 },
+    { id: 5, parent: 2 },
+    { id: 6, parent: 2 },
+    { id: 7, parent: 2 },
+    { id: 30, parent: 3 },
+    { id: 31, parent: 3 },
+    { id: 70, parent: 7 },
+    { id: 71, parent: 7 },
+    { id: 72, parent: 71},
+];
+
+//Construimos t el array de parents, entonces si t[i] === x significa que x es el parent de i
+
+var t = [];
+for (var i = 0; i < nodes.length; i++) {
+    t[nodes[i].id] = nodes[i].parent;
+}
+
+
+// t representa el array de parents
+// c representa el parent donde los childs deben ser agregados al array
+
+function f(t, c) {
+   // La estructura de la salida
+    var a = [];
+
+    // Hacemos el loop de nodos
+    for (var i = 0; i < t.length; i++) {
+        // Si el nodo tiene como parent a c
+        if (t[i] === c) {
+            // Creamos un objeto con el id y sub y hacemos push en el al array a
+
+            a.push({
+                id: i,
+                // la propiedad sub se genera recursivamente
+                sub: f(t, i)
+            });
+        }
+    }
+    // Finalizamos retornando el array a
+    return a;
+}
+
+// Imprimimos el JSON de la funcion inicial, indicando que 0 es el parametro ya que es el parent de todos los nodos
+console.log(JSON.stringify(f(t, 0)));
+
+
+
+
+[
+   {
+      "id":1,
+      "sub":[
+         {
+            "id":3,
+            "sub":[
+               {
+                  "id":30,
+                  "sub":[]
+               },
+               {
+                  "id":31,
+                  "sub":[]
+               }
+            ]
+         },
+         {
+            "id":4,
+            "sub":[]
+         }
+      ]
+   },
+   {
+      "id":2,
+      "sub":[
+         {
+            "id":5,
+            "sub":[]
+         },
+         {
+            "id":6,
+            "sub":[]
+         },
+         {
+            "id":7,
+            "sub":[
+               {
+                  "id":70,
+                  "sub":[]
+               },
+               {
+                  "id":71,
+                  "sub":[]
+               }
+            ]
+         }
+      ]
+   }
+]
+

@@ -1,0 +1,60 @@
+[{
+		"name": "Real",
+		"accountNumber": "111101",
+		"isCurrency": true,
+		"enableOnDelivery": true,
+		"default": true,
+		"amount": 0,
+		"status": 0
+	},
+	{
+		"name": "Guarani",
+		"accountNumber": "111105",
+		"enableOnDelivery": true,
+		"isCurrency": true,
+		"amount": 0,
+		"status": 0
+	},
+	{
+		"name": "Dolar",
+		"accountNumber": "111104",
+		"isCurrency": true,
+		"symbol": "usd",
+		"enableOnDelivery": true,
+		"amount": 0,
+		"status": 0
+	},
+	{
+		"name": "Peso Argentino",
+		"accountNumber": "111106",
+		"enableOnDelivery": true,
+		"isCurrency": true,
+		"amount": 0,
+		"status": 0
+	},
+	{
+		"name": "Euro",
+		"accountNumber": "111107",
+		"isCurrency": true,
+		"enableOnDelivery": true,
+		"amount": 0,
+		"status": 0
+	},
+	{
+		"name": "Cartão Crédito",
+		"accountNumber": "111203",
+		"isCurrency": false,
+		"symbol": "cc",
+		"enableOnDelivery": true,
+		"amount": 0,
+		"status": 0
+	},
+	{
+		"name": "Cartão Débito",
+		"accountNumber": "111107",
+		"isCurrency": false,
+		"enableOnDelivery": true,
+		"amount": 0,
+		"status": 0
+	}
+]
