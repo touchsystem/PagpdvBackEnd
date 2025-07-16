@@ -1,18 +1,19 @@
 var mongoose = require('mongoose'),
-Schema = mongoose.Schema,
-paginate = require('mongoose-paginate'),
-aggregatePaginate = require('mongoose-aggregate-paginate');
+    Schema = mongoose.Schema,
+    paginate = require('mongoose-paginate'),
+    aggregatePaginate = require('mongoose-aggregate-paginate');
 
 var Cashflow = new Schema({
     documentNumber: String,
-    accountNumber: {type: String, required: true},
+    accountNumber: { type: String, required: true },
     observations: Object,
-    debitAmount: {type: Number, default: 0},
-    creditAmount: {type: Number, default: 0},
+    debitAmount: { type: Number, default: 0 },
+    creditAmount: { type: Number, default: 0 },
+    currency: { type: String, default: "BRL" },
     transactionId: Number,
     ref: String,
-    date: {type: Date, default: Date.now}
-}, {collection: 'Cashflow', timestamps: true});
+    date: { type: Date, default: Date.now }
+}, { collection: 'Cashflow', timestamps: true });
 
 Cashflow.plugin(paginate);
 Cashflow.plugin(aggregatePaginate);

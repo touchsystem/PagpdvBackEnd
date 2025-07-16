@@ -1,7 +1,7 @@
 var formidable = require('formidable'),
-fs = require('fs'),
-path = require('path'),
-mongoose = require('mongoose');
+    fs = require('fs'),
+    path = require('path'),
+    mongoose = require('mongoose');
 
 exports.create = (req, res, next) => {
     /**
@@ -36,7 +36,7 @@ exports.create = (req, res, next) => {
      * 
      */
     var params = req.body;
-    var obj = { 
+    var obj = {
         additionalInformation: params.additionalInformation,
         accountNumber: params.accountNumber,
         // TODO tomar por defecto de configuraciones
@@ -46,16 +46,16 @@ exports.create = (req, res, next) => {
     }
     var Account = new req.modelFactory.getModels('Accounts').Accounts(obj);
     Account.save((err, result) => {
-        if(err) {
+        if (err) {
             console.error(err);
             return next(err);
         }
-        res.json({'status': 1, 'id': result._id});
+        res.json({ 'status': 1, 'id': result._id });
         req.onSend();
     });
 }
 
-exports.search = function(req, res, next) {
+exports.search = function (req, res, next) {
     /**
      * 
      * @api {get} /search?search=:search Búsqueda de Cuentas
@@ -89,7 +89,7 @@ exports.search = function(req, res, next) {
     var queries = req.query;
     var search = queries.search;
     var level = queries.level;
-    (typeof level != 'undefined') ? ((level.length > 0) ? level = level : level = {$ne: null}) : level = {$ne: null}
+    (typeof level != 'undefined') ? ((level.length > 0) ? level = level : level = { $ne: null }) : level = { $ne: null }
     /*if(typeof level != 'undefined') {
         if(level.length > 0) {
             level = `${level}`;
@@ -100,37 +100,48 @@ exports.search = function(req, res, next) {
         level = {$ne: null};
     }*/
 
+    console.log(search);
     limit = parseInt(queries.limit, 10);
     var Accounts = req.modelFactory.get('Accounts');
-    Accounts.find({'status': 0, level: level, "accountNumber":  {"$regex": ".*" + search + ".*", "$options": 'i'}}, (err, results) => {
-        if(err) return next(err);
+    Accounts.find({
+        'status': 0,
+        level: level,
+        // "accountNumber":  {"$regex": ".*" + search + ".*", "$options": 'i'}
+        $or: [
+            { accountNumber: { $regex: ".*" + search + ".*", $options: 'i' } },
+            { denomination: { $regex: ".*" + search + ".*", $options: 'i' } }
+        ]
+    }, (err, results) => {
+        if (err) return next(err);
         console.log(results, 'test');
         res.send(results);
         req.onSend()
-    })
-    /*Account.find({'status': 0, "level": level, "denomination": {"$regex": ".*" + search + ".*", "$options": 'i'}}, (err, result) => {
-        if(err) {
-            console.error(err);
-            return next(err);
-        }  
-        console.log(result);
-        res.send(result);
-        req.onSend();
-    }).limit(limit);*/
+    });
+    // var account = Accounts.find({'status': 0, "level": level, "denomination": {"$regex": ".*" + search + ".*", "$options": 'i'}}, (err, result) => {
+    //     if(err) {
+    //         console.error(err);
+    //         return next(err);
+    //     }  
+    //     console.log(result);
+    //     res.send(result);
+    //     req.onSend();
+    // }).limit(limit);
+
+
 }
 
 exports.import = (req, res, next) => {
     var obj = [];
     var form = new formidable.IncomingForm();
 
-    function pushToObj (body) {
-        return new Promise(function(resolve, reject){
+    function pushToObj(body) {
+        return new Promise(function (resolve, reject) {
             var i = 0;
             body.forEach(element => {
                 let level = order[element.TIPO];
-                obj.push({accountNumber: element.CONTA, denomination: element.NOME_CONTA, level: level, saldoAnterior: 0, debit: 0, credit: 0, saldo: 0});
+                obj.push({ accountNumber: element.CONTA, denomination: element.NOME_CONTA, level: level, saldoAnterior: 0, debit: 0, credit: 0, saldo: 0 });
                 i++;
-                if(count == i) {
+                if (count == i) {
                     resolve(obj);
                 }
             });
@@ -138,27 +149,27 @@ exports.import = (req, res, next) => {
     }
 
     form.parse(req, (err, fields, files) => {
-        if(err) return next(err);
+        if (err) return next(err);
         let count = Object.keys(files).length;
         console.log(count);
-        if(count >= 1) {
+        if (count >= 1) {
             var file = files.files.path;
             fs.readFile(file, (err, data) => {
                 //console.log(data.toString());
                 var body = JSON.parse(data.toString());
                 var count = Object.keys(body).length;
-                var order = {'P': 1, 'S': 2, 'T': 3, 'Q': 4, 'C': 5};
+                var order = { 'P': 1, 'S': 2, 'T': 3, 'Q': 4, 'C': 5 };
 
                 (async () => {
                     const insertedObj = await pushToObj(body);
                 })();
-                
+
                 var Account = req.modelFactory.get('Accounts');
                 Account.insertMany(insertedObj, (err, result) => {
-                    if(err) {
+                    if (err) {
                         console.error(err);
                         return next(err);
-                    }  
+                    }
                     res.end();
                     req.onSend();
                 });
@@ -221,11 +232,11 @@ exports.list = (req, res, next) => {
     var queries = req.query;
     var page = queries.page;
     limit = parseInt(queries.limit, 10);
-    req.modelFactory.get('Accounts').paginate({status: 0}, {page: page, limit: limit, sort: {accountNumber: 1}}, (err, result) => {
-        if(err) {
+    req.modelFactory.get('Accounts').paginate({ status: 0 }, { page: page, limit: limit, sort: { accountNumber: 1 } }, (err, result) => {
+        if (err) {
             console.error(err);
             return next(err);
-        }  
+        }
         res.send(result);
         req.onSend();
     });
@@ -258,12 +269,12 @@ exports.detail = (req, res, next) => {
      * 
      */
     var id = req.params.id;
-    if(id != 'undefined' || id != 'null') {
-        req.modelFactory.get('Acccounts').find({_id: id}, (err, result) => {
-            if(err) {
+    if (id != 'undefined' || id != 'null') {
+        req.modelFactory.get('Acccounts').find({ _id: id }, (err, result) => {
+            if (err) {
                 console.error(err);
                 return next(err);
-            }  
+            }
             res.send(result);
             req.onSend();
         })
@@ -292,14 +303,14 @@ exports.delete = (req, res, next) => {
      * 
      */
     var id = req.params.id;
-    if(id != 'undefined' || id != 'null') {
+    if (id != 'undefined' || id != 'null') {
         console.log(id, 'id');
-        req.modelFactory.get('Accounts').update({_id: mongoose.Types.ObjectId(id)}, {$set: {'status': 1}}, (err, result) => { 
-            if(err) {
+        req.modelFactory.get('Accounts').update({ _id: mongoose.Types.ObjectId(id) }, { $set: { 'status': 1 } }, (err, result) => {
+            if (err) {
                 console.error(err);
-                return next(err); 
-            } 
-            res.json({'status': 1});
+                return next(err);
+            }
+            res.json({ 'status': 1 });
             req.onSend();
         });
     }
@@ -331,20 +342,20 @@ exports.update = (req, res, next) => {
      * 
      */
     var id = req.params.id;
-    if(id != 'undefined' || id != 'null'){
+    if (id != 'undefined' || id != 'null') {
         var params = req.body;
         req.modelFactory.get('Accounts').findById(id, (err, p) => {
-            if(!p) return next(new Error('There is a problem with a document or doesnt exist'));
+            if (!p) return next(new Error('There is a problem with a document or doesnt exist'));
             p.additionalInformation = params.additionalInformation,
-            p.accountNumber = params.accountNumber,
-            p.denomination = params.denomination,
-            p.level = params.level;
+                p.accountNumber = params.accountNumber,
+                p.denomination = params.denomination,
+                p.level = params.level;
             p.save(err => {
-                if(err) {
+                if (err) {
                     console.error(err);
                     return next(err);
                 }
-                res.json({'status': 1});
+                res.json({ 'status': 1 });
                 req.onSend();
             });
         })

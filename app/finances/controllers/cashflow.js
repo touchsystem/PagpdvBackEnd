@@ -44,7 +44,7 @@ exports.create = (req, res, next) => {
      * 
      * 
      */
-    if(typeof req != 'undefined'){
+    if (typeof req != 'undefined') {
         var obj = [];
         var params = req.body;
         var count = Object.keys(params).length;
@@ -56,16 +56,17 @@ exports.create = (req, res, next) => {
                 observations: element.observations,
                 creditAmount: element.creditAmount,
                 debitAmount: element.debitAmount,
+                currency: element.currency,
                 date: element.date
             });
         });
         var Cashflow = req.modelFactory.get('Cashflow');
         Cashflow.insertMany(obj, (err, result) => {
-            if(err) {
+            if (err) {
                 console.error(err);
                 return next(err);
             }
-            res.send({'status': 1});
+            res.send({ 'status': 1 });
             req.onSend();
         });
     }
@@ -86,22 +87,22 @@ exports.import = (req, res, next) => {
     console.log(req.files);*/
     var form = new formidable.IncomingForm();
     form.parse(req, (err, fields, files) => {
-        if(err) {
+        if (err) {
             console.error(err);
             return next(err);
         }
         var count = Object.keys(files).length;
         console.log(count);
-        if(count >= 1) {
+        if (count >= 1) {
             var file = files.files.path;
             fs.readFile(file, (err, data) => {
                 //console.log(data.toString());
                 var body = JSON.parse(data.toString());
                 body.forEach(element => {
                     //console.log(element.ID);
-                    var order = {'P': 1, 'S': 2, 'T': 3, 'Q': 4, 'C': 5};
-                    console.log('El elemento es '+element.TIPO+' y su orden es' +order[element.TIPO]);
-                    if(typeof order[element.TIPO] != 'undefined') {
+                    var order = { 'P': 1, 'S': 2, 'T': 3, 'Q': 4, 'C': 5 };
+                    console.log('El elemento es ' + element.TIPO + ' y su orden es' + order[element.TIPO]);
+                    if (typeof order[element.TIPO] != 'undefined') {
                         let level = order[element.TIPO];
                         var obj = {
                             accountNumber: element.CONTA,
@@ -114,17 +115,17 @@ exports.import = (req, res, next) => {
                         }
                         var Account = req.modelFactory.get('Accounts')(obj);
                         Account.save((err, result) => {
-                            if(err) {
+                            if (err) {
                                 console.error(err);
                                 return next(err);
                             }
                         })
                     }
                 });
-                res.json({'status': 1});
+                res.json({ 'status': 1 });
                 req.onSend();
             });
-        } 
+        }
     });
 }
 
@@ -151,117 +152,117 @@ exports.accountsPdf = (req, res, next) => {
     var endDate = req.query.endDate;
     var account = queries.account;
     var Cashflow = req.modelFactory.get('Cashflow');
-    Cashflow.find({'accountNumber': account, 'date': {'$gte': new Date(startDate), '$lte': new Date(endDate)}}, (err, result) => {
-        if(err) return next(err);
+    Cashflow.find({ 'accountNumber': account, 'date': { '$gte': new Date(startDate), '$lte': new Date(endDate) } }, (err, result) => {
+        if (err) return next(err);
         var accountDetails = result;
         Cashflow.aggregate(
             [
-                { 
-                    "$match" : {
-                        "accountNumber" : account
+                {
+                    "$match": {
+                        "accountNumber": account
                     }
-                }, 
-                { 
-                    "$group" : {
-                        "_id" : "$accountNumber", 
-                        "cashflow_docs" : {
-                            "$push" : {
-                                "debitAmount" : "$debitAmount", 
-                                "creditAmount" : "$creditAmount", 
-                                "date" : "$date"
+                },
+                {
+                    "$group": {
+                        "_id": "$accountNumber",
+                        "cashflow_docs": {
+                            "$push": {
+                                "debitAmount": "$debitAmount",
+                                "creditAmount": "$creditAmount",
+                                "date": "$date"
                             }
                         }
                     }
-                }, 
-                { 
-                    "$project" : {
-                        "_id" : 1, 
-                        "cashflow_docs" : {
-                            "$filter" : {
-                                "input" : "$cashflow_docs", 
-                                "as" : "cashflow", 
-                                "cond" : {
-                                    "$and" : [
+                },
+                {
+                    "$project": {
+                        "_id": 1,
+                        "cashflow_docs": {
+                            "$filter": {
+                                "input": "$cashflow_docs",
+                                "as": "cashflow",
+                                "cond": {
+                                    "$and": [
                                         {
-                                            "$gte" : [
-                                                "$$cashflow.date", 
+                                            "$gte": [
+                                                "$$cashflow.date",
                                                 new Date(startDate)
                                             ]
-                                        }, 
+                                        },
                                         {
-                                            "$lte" : [
-                                                "$$cashflow.date", 
+                                            "$lte": [
+                                                "$$cashflow.date",
                                                 new Date(endDate)
                                             ]
                                         }
                                     ]
                                 }
                             }
-                        }, 
-                        "balance_docs" : {
-                            "$filter" : {
-                                "input" : "$cashflow_docs", 
-                                "as" : "balance", 
-                                "cond" : {
-                                    "$lt" : [
-                                        "$$balance.date", 
+                        },
+                        "balance_docs": {
+                            "$filter": {
+                                "input": "$cashflow_docs",
+                                "as": "balance",
+                                "cond": {
+                                    "$lt": [
+                                        "$$balance.date",
                                         new Date(startDate)
                                     ]
                                 }
                             }
                         }
                     }
-                }, 
-                { 
-                    "$project" : {
-                        "accountNumber" : "$_id", 
-                        "cashflowDebit" : {
-                            "$sum" : "$cashflow_docs.debitAmount"
-                        }, 
-                        "cashflowCredit" : {
-                            "$sum" : "$cashflow_docs.creditAmount"
-                        }, 
-                        "balanceDebit" : {
-                            "$sum" : "$balance_docs.debitAmount"
-                        }, 
-                        "balanceCredit" : {
-                            "$sum" : "$balance_docs.creditAmount"
-                        }, 
-                        "previousBalance" : {
-                            "$sum" : {
-                                "$subtract" : [
+                },
+                {
+                    "$project": {
+                        "accountNumber": "$_id",
+                        "cashflowDebit": {
+                            "$sum": "$cashflow_docs.debitAmount"
+                        },
+                        "cashflowCredit": {
+                            "$sum": "$cashflow_docs.creditAmount"
+                        },
+                        "balanceDebit": {
+                            "$sum": "$balance_docs.debitAmount"
+                        },
+                        "balanceCredit": {
+                            "$sum": "$balance_docs.creditAmount"
+                        },
+                        "previousBalance": {
+                            "$sum": {
+                                "$subtract": [
                                     {
-                                        "$sum" : "$balance_docs.debitAmount"
-                                    }, 
+                                        "$sum": "$balance_docs.debitAmount"
+                                    },
                                     {
-                                        "$sum" : "$balance_docs.creditAmount"
+                                        "$sum": "$balance_docs.creditAmount"
                                     }
                                 ]
                             }
                         }
                     }
-                }, 
-                { 
-                    "$project" : {
-                        "accountNumber" : 1, 
-                        "cashflowDebit" : 1, 
-                        "cashflowCredit" : 1, 
-                        "previousBalance" : 1, 
-                        "balance" : {
-                            "$subtract" : [
+                },
+                {
+                    "$project": {
+                        "accountNumber": 1,
+                        "cashflowDebit": 1,
+                        "cashflowCredit": 1,
+                        "previousBalance": 1,
+                        "balance": {
+                            "$subtract": [
                                 {
-                                    "$add" : [
-                                        "$previousBalance", 
+                                    "$add": [
+                                        "$previousBalance",
                                         "$cashflowDebit"
                                     ]
-                                }, 
+                                },
                                 "$cashflowCredit"
                             ]
                         }
                     }
                 }
             ], (err, result) => {
-                if(err) return next(err);
+                if (err) return next(err);
                 var html = `<html>
                 <head>  
                     <style>
@@ -315,7 +316,7 @@ exports.accountsPdf = (req, res, next) => {
                 (async () => {
                     var totalDebitAmount = 0;
                     var totalCreditAmount = 0;
-                    for(let i = 0; i < Object.keys(accountDetails).length; i++) {
+                    for (let i = 0; i < Object.keys(accountDetails).length; i++) {
                         let element = accountDetails[i];
                         html += `<tr>
                             <td width="100"><span>${moment(element.date).format('L')}</span></td>
@@ -346,14 +347,14 @@ exports.accountsPdf = (req, res, next) => {
                     </table>
                     </body>
                     </html>`;
-                    var options = { 
-                        format: 'A4', 
+                    var options = {
+                        format: 'A4',
                         "border": {
                             "top": "1in",
                             "right": "0.5in",
                             "bottom": "1.5in",
                             "left": "0.5in"
-                        }, 
+                        },
                     };
                     /*res.setHeader('Content-Type', 'application/pdf');
                     pdf.create(html, options).toStream(function(err, stream) {
@@ -366,16 +367,16 @@ exports.accountsPdf = (req, res, next) => {
 
                     var options = {
                         "html": html,
-                        "paperSize": {format: 'Legal', orientation: 'portrait', border: '0.3in'}
+                        "paperSize": { format: 'Legal', orientation: 'portrait', border: '0.3in' }
                     }
 
                     var startDate = moment(req.query.startDate).format('DD-MM-YYYY');
                     var endDate = moment(req.query.endDate).format('DD-MM-YYYY');
 
-                    pdf.convert(options, function(err, result) {
+                    pdf.convert(options, function (err, result) {
                         var tmpPath = result.getTmpPath();
                         console.log(tmpPath);
-                        S3Manager.uploadFromFile(tmpPath, 'pdf/balance-'+startDate+'-ao-'+endDate+'-', function(err, data){ 
+                        S3Manager.uploadFromFile(tmpPath, 'pdf/balance-' + startDate + '-ao-' + endDate + '-', function (err, data) {
                             console.log(data, 'response');
                             res.send(data);
                             req.onSend();
@@ -409,105 +410,143 @@ exports.dailyPdf = async (req, res, next) => {
     var filter = {};
     var startDate = queries.startDate;
     var endDate = queries.endDate;
-
+    var currency = queries.currency;
+    console.log("Currency -> " + currency);
+    if (currency === 'ALL') {
+        currency = '';
+    }
     var title = "";
-    if(queries.account) {
+    if (queries.account) {
         filter["accountNumber"] = queries.account;
-    } 
+    }
 
+    if (currency) {
+        filter["currency"] = currency;
+    }
+
+    console.log("filter ", filter);
     console.log(startDate, 'startDate');
     console.log(endDate, 'endDate');
 
-    if(startDate && endDate) {
-        filter["date"] = {"$gte": moment(startDate).startOf('day').toDate(), "$lte": moment(endDate).endOf('day').toDate()};
-        title = "Periodo "+moment(startDate).format("L")+" a: "+moment(endDate).format("L");
+
+    if (startDate && endDate) {
+        filter["date"] = { "$gte": moment(startDate).startOf('day').toDate(), "$lte": moment(endDate).endOf('day').toDate() };
+        title = "Periodo " + moment(startDate).format("L") + " a: " + moment(endDate).format("L");
     } else {
         const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm:ss');
         console.log(startOfMonth, 'startOfMonth');
-        filter["date"] = {'$gte': new Date(startOfMonth), '$lte': new Date()};
-        title = 'Mes: '+moment().format('MMMM')
+        filter["date"] = { '$gte': new Date(startOfMonth), '$lte': new Date() };
+        title = 'Mes: ' + moment().format('MMMM')
     }
 
 
-    var match = {"$match": {}};
+    var match = { "$match": {} };
 
-    if(startDate && endDate) {
-        match["$match"] = {"date": {"$gte": moment(startDate).startOf('day').toDate(), "$lte": moment(endDate).endOf('day').toDate()}};
+    if (startDate && endDate) {
+        match["$match"] = {
+            "date": { "$gte": moment(startDate).startOf('day').toDate(), "$lte": moment(endDate).endOf('day').toDate() },
+            "currency": currency
+        };
 
     } else {
         const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm:ss');
-        match["$match"] = {"date":{'$gte': new Date(startOfMonth), '$lte': new Date()}};
+        match["$match"] = {
+            "date": { '$gte': new Date(startOfMonth), '$lte': new Date() },
+            "currency": currency
+        };
     }
 
+    console.log("MATCH -> ", match);
+    var result = await req.modelFactory.get('Cashflow').aggregate([match]).exec();
+    console.log(result);
+    console.log("FIM");
     var header = await req.modelFactory.get('Cashflow').aggregate([
         match,
-            { 
-                "$group" : {
-                    "_id" : "$accountNumber", 
-                    "cashflow_docs" : {
-                        "$push" : {"debitAmount": "$debitAmount", "creditAmount": "$creditAmount", "date": "$date"}
-                    }
+        {
+            "$group": {
+                "_id": "$accountNumber",
+                "currency": { "$first": "$currency" },
+                "cashflow_docs": {
+                    "$push": { "debitAmount": "$debitAmount", "creditAmount": "$creditAmount", "date": "$date" }
                 }
-            },
-            {
-                "$project": {
-                    "_id": 1,
-                    "cashflow_docs": 
-                    {"$filter": {
-                            "input": "$cashflow_docs",
-                            "as": "cashflow", 
-                            "cond":  {"$and": [
-                                {"$gte": ["$$cashflow.date", new Date(startDate)]},
-                                {"$lte": ["$$cashflow.date", new Date(endDate)]}
-                         ]}    
-                        }
-                  },
-                  "balance_docs": 
-                  {"$filter":{
-                      "input": "$cashflow_docs",
-                      "as": "balance",
-                      "cond": {"$lt": ["$$balance.date", new Date(startDate)]}
-                  }}
-              }
-            },
-            {"$project": 
+            }
+        },
+        {
+            "$project": {
+                "_id": 1,
+                "currency": 1,
+                "cashflow_docs":
                 {
-                    "accountNumber": "$_id",
-                    "cashflowDebit": {"$sum": "$cashflow_docs.debitAmount"},
-                    "cashflowCredit": {"$sum": "$cashflow_docs.creditAmount"},
-                    "balanceDebit": {"$sum": "$balance_docs.debitAmount"},
-                    "balanceCredit": {"$sum": "$balance_docs.creditAmount"}, 
-                    "previousBalance" : {
-                        "$sum" : {
-                            "$subtract" : [
-                                {"$sum": "$balance_docs.debitAmount"}, 
-                                {"$sum": "$balance_docs.creditAmount"}
+                    "$filter": {
+                        "input": "$cashflow_docs",
+                        "as": "cashflow",
+                        "cond": {
+                            "$and": [
+                                { "$gte": ["$$cashflow.date", new Date(startDate)] },
+                                { "$lte": ["$$cashflow.date", new Date(endDate)] }
                             ]
                         }
-                    },
+                    }
+                },
+                "balance_docs":
+                {
+                    "$filter": {
+                        "input": "$cashflow_docs",
+                        "as": "balance",
+                        "cond": { "$lt": ["$$balance.date", new Date(startDate)] }
+                    }
                 }
-            },
-            {"$project": {
-                    "accountNumber": 1,
-                    "cashflowDebit": 1,
-                    "cashflowCredit": 1,
-                    "previousBalance": 1,
-                    "balance": {"$subtract": [{"$add": ["$previousBalance", "$cashflowDebit"]}, "$cashflowCredit"]}
-            }},
-            {"$group": {
-                "_id": "$type",
-                "cashflowDebit": {"$sum": "$cashflowDebit"},
-                "cashflowCredit": {"$sum": "$cashflowCredit"},
-                "previousBalance": {"$sum": "$previousBalance"},
-                "balance": {"$sum": "$balance"}
-            }}
+            }
+        },
+        {
+            "$project":
+            {
+                "accountNumber": "$_id",
+                "currency": 1,
+                "cashflowDebit": { "$sum": "$cashflow_docs.debitAmount" },
+                "cashflowCredit": { "$sum": "$cashflow_docs.creditAmount" },
+                "balanceDebit": { "$sum": "$balance_docs.debitAmount" },
+                "balanceCredit": { "$sum": "$balance_docs.creditAmount" },
+                "previousBalance": {
+                    "$sum": {
+                        "$subtract": [
+                            { "$sum": "$balance_docs.debitAmount" },
+                            { "$sum": "$balance_docs.creditAmount" }
+                        ]
+                    }
+                },
+            }
+        },
+        {
+            "$project": {
+                "accountNumber": 1,
+                "currency": 1,
+                "cashflowDebit": 1,
+                "cashflowCredit": 1,
+                "previousBalance": 1,
+                "balance": { "$subtract": [{ "$add": ["$previousBalance", "$cashflowDebit"] }, "$cashflowCredit"] }
+            }
+        },
+        {
+            "$group": {
+                "_id": { type: "$type", currency: "$currency" },
+                "cashflowDebit": { "$sum": "$cashflowDebit" },
+                "cashflowCredit": { "$sum": "$cashflowCredit" },
+                "previousBalance": { "$sum": "$previousBalance" },
+                "balance": { "$sum": "$balance" }
+            }
+        }
     ]).exec();
-    
+
+    console.log("COMEÇO HEADER");
     console.log(header, 'header');
+    console.log("FIM DO HEADER");
+    console.log("Começo do FILTER");
     console.log(filter);
+    console.log("Fim do FILTER");
 
     req.modelFactory.get('Cashflow').find(filter, (err, result) => {
-        if(err) return next(err);
+        if (err) return next(err);
         var html = `<html>
         <head>  
             <style>
@@ -557,15 +596,15 @@ exports.dailyPdf = async (req, res, next) => {
         (async () => {
             var totalDebitAmount = 0;
             var totalCreditAmount = 0;
-            for(let i = 0; i < Object.keys(result).length; i++) {
+            for (let i = 0; i < Object.keys(result).length; i++) {
                 let element = result[i];
                 var description = "";
-                console.log(typeof element.observations);
-                
-                if(typeof element.observations != 'undefined') {
-                    if(Array.isArray(element.observations)) {
+                // console.log(typeof element.observations);
+
+                if (typeof element.observations != 'undefined') {
+                    if (Array.isArray(element.observations)) {
                         description = element.observations[0].description;
-                    } else if(typeof element.observations == 'string') {
+                    } else if (typeof element.observations == 'string') {
                         description = element.observations;
                     } else {
                         description = element.observations.description;
@@ -573,9 +612,9 @@ exports.dailyPdf = async (req, res, next) => {
                 } else {
                     description = 'Movimento de Caixa';
                 }
-                
-                
-                console.log(description);
+
+
+                // console.log(description);
                 html += `<tr>
                     <td width="100"><span>${moment(element.date).format('L')}</span></td>
                     <td width="150"><span>${element.accountNumber}</span></td>
@@ -613,22 +652,22 @@ exports.dailyPdf = async (req, res, next) => {
         })();
         var options = {
             "html": html,
-            "paperSize": {format: 'Legal', orientation: 'portrait', border: '0.3in'}
+            "paperSize": { format: 'Legal', orientation: 'portrait', border: '0.3in' }
         }
 
         var startDate = moment(req.query.startDate).format('DD-MM-YYYY');
         var endDate = moment(req.query.endDate).format('DD-MM-YYYY');
 
-        pdf.convert(options, function(err, result) {
+        pdf.convert(options, function (err, result) {
             var tmpPath = result.getTmpPath();
             console.log(tmpPath);
-            S3Manager.uploadFromFile(tmpPath, 'pdf/cashflow-'+startDate+'-ao-'+endDate+'-', function(err, data){ 
+            S3Manager.uploadFromFile(tmpPath, 'pdf/cashflow-' + startDate + '-ao-' + endDate + '-', function (err, data) {
                 console.log(data, 'response');
                 res.send(data);
                 req.onSend();
             });
         });
-    }).sort({date: 1});
+    }).sort({ date: 1 });
 }
 
 /*
@@ -776,95 +815,105 @@ exports.filter = (req, res, next) => {
     var endDate = req.query.endDate;
     var accountNumber = req.query.accountNumber;
     var models = req.modelFactory.getModels('Accounts', 'Cashflow');
-    var match = {"$match": {}};
+    var match = { "$match": {} };
     var filter = {};
-    if(typeof accountNumber != 'undefined' && accountNumber != null) {
-        match["$match"] = {"accountNumber": accountNumber};
+    if (typeof accountNumber != 'undefined' && accountNumber != null) {
+        match["$match"] = { "accountNumber": accountNumber };
         filter["accountNumber"] = accountNumber;
     }
 
-    if(typeof(startDate && endDate) != 'undefined') {
-        filter["date"] = {'$gte': new Date(startDate), '$lte': new Date(endDate)};
+    if (typeof (startDate && endDate) != 'undefined') {
+        filter["date"] = { '$gte': new Date(startDate), '$lte': new Date(endDate) };
     }
-    
+
     models.Cashflow.aggregate(
         [
             match,
-            { 
-                "$group" : {
-                    "_id" : "$accountNumber", 
-                    "cashflow_docs" : {
-                        "$push" : {"debitAmount": "$debitAmount", "creditAmount": "$creditAmount", "date": "$date"}
+            {
+                "$group": {
+                    "_id": "$accountNumber",
+                    "cashflow_docs": {
+                        "$push": { "debitAmount": "$debitAmount", "creditAmount": "$creditAmount", "date": "$date" }
                     }
                 }
             },
             {
                 "$project": {
                     "_id": 1,
-                    "cashflow_docs": 
-                    {"$filter": {
+                    "cashflow_docs":
+                    {
+                        "$filter": {
                             "input": "$cashflow_docs",
-                            "as": "cashflow", 
-                            "cond":  {"$and": [
-                                {"$gte": ["$$cashflow.date", new Date(startDate)]},
-                                {"$lte": ["$$cashflow.date", new Date(endDate)]}
-                         ]}    
+                            "as": "cashflow",
+                            "cond": {
+                                "$and": [
+                                    { "$gte": ["$$cashflow.date", new Date(startDate)] },
+                                    { "$lte": ["$$cashflow.date", new Date(endDate)] }
+                                ]
+                            }
                         }
-                  },
-                  "balance_docs": 
-                  {"$filter":{
-                      "input": "$cashflow_docs",
-                      "as": "balance",
-                      "cond": {"$lt": ["$$balance.date", new Date(startDate)]}
-                  }}
-              }
+                    },
+                    "balance_docs":
+                    {
+                        "$filter": {
+                            "input": "$cashflow_docs",
+                            "as": "balance",
+                            "cond": { "$lt": ["$$balance.date", new Date(startDate)] }
+                        }
+                    }
+                }
             },
-            {"$project": 
+            {
+                "$project":
                 {
                     "accountNumber": "$_id",
-                    "cashflowDebit": {"$sum": "$cashflow_docs.debitAmount"},
-                    "cashflowCredit": {"$sum": "$cashflow_docs.creditAmount"},
-                    "balanceDebit": {"$sum": "$balance_docs.debitAmount"},
-                    "balanceCredit": {"$sum": "$balance_docs.creditAmount"}, 
-                    "previousBalance" : {
-                        "$sum" : {
-                            "$subtract" : [
-                                {"$sum": "$balance_docs.debitAmount"}, 
-                                {"$sum": "$balance_docs.creditAmount"}
+                    "cashflowDebit": { "$sum": "$cashflow_docs.debitAmount" },
+                    "cashflowCredit": { "$sum": "$cashflow_docs.creditAmount" },
+                    "balanceDebit": { "$sum": "$balance_docs.debitAmount" },
+                    "balanceCredit": { "$sum": "$balance_docs.creditAmount" },
+                    "previousBalance": {
+                        "$sum": {
+                            "$subtract": [
+                                { "$sum": "$balance_docs.debitAmount" },
+                                { "$sum": "$balance_docs.creditAmount" }
                             ]
                         }
                     },
                 }
             },
-            {"$project": {
+            {
+                "$project": {
                     "accountNumber": 1,
                     "cashflowDebit": 1,
                     "cashflowCredit": 1,
                     "previousBalance": 1,
-                    "balance": {"$subtract": [{"$add": ["$previousBalance", "$cashflowDebit"]}, "$cashflowCredit"]}
-            }},
-            {"$group": {
-                "_id": "$type",
-                "cashflowDebit": {"$sum": "$cashflowDebit"},
-                "cashflowCredit": {"$sum": "$cashflowCredit"},
-                "previousBalance": {"$sum": "$previousBalance"},
-                "balance": {"$sum": "$balance"}
-            }}
-    ], (err, result) => {
-        var header = result;
-        console.log('Header', header);
-        var Cashflow = req.modelFactory.get('Cashflow');
-        console.log(filter);
-        Cashflow.paginate(filter, {page: page, limit: limit, sort: {date: -1}},  (err, result) => {
-            if(err) {
-                console.error(err);
-                return next(err);
+                    "balance": { "$subtract": [{ "$add": ["$previousBalance", "$cashflowDebit"] }, "$cashflowCredit"] }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$type",
+                    "cashflowDebit": { "$sum": "$cashflowDebit" },
+                    "cashflowCredit": { "$sum": "$cashflowCredit" },
+                    "previousBalance": { "$sum": "$previousBalance" },
+                    "balance": { "$sum": "$balance" }
+                }
             }
-            var body = result;
-            res.send({'header': header, 'body': body});
-            req.onSend();
-        });
-    }).sort({accountNumber: 1});   
+        ], (err, result) => {
+            var header = result;
+            console.log('Header', header);
+            var Cashflow = req.modelFactory.get('Cashflow');
+            console.log(filter);
+            Cashflow.paginate(filter, { page: page, limit: limit, sort: { date: -1 } }, (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return next(err);
+                }
+                var body = result;
+                res.send({ 'header': header, 'body': body });
+                req.onSend();
+            });
+        }).sort({ accountNumber: 1 });
 }
 
 exports.show = (req, res, next) => {
@@ -873,27 +922,31 @@ exports.show = (req, res, next) => {
     limit = parseInt(queries.limit, 10);
     var models = req.modelFactory.getModels('Contacts');
     var aggregate = models.Contacts.aggregate([
-        {'$match': {'status': 0}},
-        {"$lookup": {"from" : "Cashflow" , "localField" : "_id" , "foreignField" : "businessPartnerId" , "as" : "cashflow_docs"}},
-        {"$project": {
-            "_id": 1,
+        { '$match': { 'status': 0 } },
+        { "$lookup": { "from": "Cashflow", "localField": "_id", "foreignField": "businessPartnerId", "as": "cashflow_docs" } },
+        {
             "$project": {
                 "_id": 1,
-                "cashflow": {$filter : {
-                    input: "$cashflow_docs",
-                    as : "cashflow",
-                    cond : {$eq: ["$$cashflow.status", 0]}
-                }}
+                "$project": {
+                    "_id": 1,
+                    "cashflow": {
+                        $filter: {
+                            input: "$cashflow_docs",
+                            as: "cashflow",
+                            cond: { $eq: ["$$cashflow.status", 0] }
+                        }
+                    }
+                }
             }
-        }}
+        }
     ]);
-    req.modelFactory.get('Contacts').aggregatePaginate(aggregate, {page: page, limit: limit}, (err, result, pageCount, count) => {
-        if(err) {
+    req.modelFactory.get('Contacts').aggregatePaginate(aggregate, { page: page, limit: limit }, (err, result, pageCount, count) => {
+        if (err) {
             console.error(err);
             return next(err);
         }
         // Response with JSON in this standard format
-        res.json({"docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount});
+        res.json({ "docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount });
         // Close the connection
         req.onSend();
     });
@@ -980,107 +1033,119 @@ exports.list = (req, res, next) => {
     limit = parseInt(queries.limit, 10);
     req.modelFactory.get('Cashflow').aggregate(
         [
-            { 
-                "$group" : {
-                    "_id" : "$accountNumber", 
-                    "cashflow_docs" : {
-                        "$push" : {"debitAmount": "$debitAmount", "creditAmount": "$creditAmount", "date": "$date"}
+            {
+                "$group": {
+                    "_id": "$accountNumber",
+                    "cashflow_docs": {
+                        "$push": { "debitAmount": "$debitAmount", "creditAmount": "$creditAmount", "date": "$date" }
                     }
                 }
             },
             {
                 "$project": {
                     "_id": 1,
-                    "cashflow_docs": 
-                    {"$filter": {
+                    "cashflow_docs":
+                    {
+                        "$filter": {
                             "input": "$cashflow_docs",
-                            "as": "cashflow", 
-                            "cond":  {"$and": [
-                                {"$gte": ["$$cashflow.date", new Date(startDate)]},
-                                {"$lte": ["$$cashflow.date", new Date(endDate)]}
-                         ]}    
+                            "as": "cashflow",
+                            "cond": {
+                                "$and": [
+                                    { "$gte": ["$$cashflow.date", new Date(startDate)] },
+                                    { "$lte": ["$$cashflow.date", new Date(endDate)] }
+                                ]
+                            }
                         }
-                  },
-                  "balance_docs": 
-                  {"$filter":{
-                      "input": "$cashflow_docs",
-                      "as": "balance",
-                      "cond": {"$lt": ["$$balance.date", new Date(startDate)]}
-                  }}
-              }
+                    },
+                    "balance_docs":
+                    {
+                        "$filter": {
+                            "input": "$cashflow_docs",
+                            "as": "balance",
+                            "cond": { "$lt": ["$$balance.date", new Date(startDate)] }
+                        }
+                    }
+                }
             },
-            {"$project": 
+            {
+                "$project":
                 {
                     "accountNumber": "$_id",
-                    "cashflowDebit": {"$sum": "$cashflow_docs.debitAmount"},
-                    "cashflowCredit": {"$sum": "$cashflow_docs.creditAmount"},
-                    "balanceDebit": {"$sum": "$balance_docs.debitAmount"},
-                    "balanceCredit": {"$sum": "$balance_docs.creditAmount"}, 
-                    "previousBalance" : {
-                        "$sum" : {
-                            "$subtract" : [
-                                {"$sum": "$balance_docs.debitAmount"}, 
-                                {"$sum": "$balance_docs.creditAmount"}
+                    "cashflowDebit": { "$sum": "$cashflow_docs.debitAmount" },
+                    "cashflowCredit": { "$sum": "$cashflow_docs.creditAmount" },
+                    "balanceDebit": { "$sum": "$balance_docs.debitAmount" },
+                    "balanceCredit": { "$sum": "$balance_docs.creditAmount" },
+                    "previousBalance": {
+                        "$sum": {
+                            "$subtract": [
+                                { "$sum": "$balance_docs.debitAmount" },
+                                { "$sum": "$balance_docs.creditAmount" }
                             ]
                         }
                     },
                 }
             },
-            {"$project": {
+            {
+                "$project": {
                     "accountNumber": 1,
                     "cashflowDebit": 1,
                     "cashflowCredit": 1,
                     "previousBalance": 1,
-                    "balance": {"$subtract": [{"$add": ["$previousBalance", "$cashflowDebit"]}, "$cashflowCredit"]}
-            }},
-            {"$group": {
-                "_id": "$type",
-                "cashflowDebit": {"$sum": "$cashflowDebit"},
-                "cashflowCredit": {"$sum": "$cashflowCredit"},
-                "previousBalance": {"$sum": "$previousBalance"},
-                "balance": {"$sum": "$balance"}
-            }}
-    ], (err, result) => {
-        let header = result;
-        var aggregate = req.modelFactory.get('Cashflow').aggregate([
-            {"$project": {
-                "accountNumber": 1,
-                "creditAmount": 1,
-                "debitAmount": 1,
-                "date": 1,
-                "documentNumber": 1,
-                "observations": "$observations.description"
-            }}
-        ]);
-        req.modelFactory.get('Cashflow').aggregatePaginate(aggregate, {page: page, limit: limit}, (err, result, pageCount, count) => {
-            if(err) {
-                console.error(err);
-                return next(err);
+                    "balance": { "$subtract": [{ "$add": ["$previousBalance", "$cashflowDebit"] }, "$cashflowCredit"] }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$type",
+                    "cashflowDebit": { "$sum": "$cashflowDebit" },
+                    "cashflowCredit": { "$sum": "$cashflowCredit" },
+                    "previousBalance": { "$sum": "$previousBalance" },
+                    "balance": { "$sum": "$balance" }
+                }
             }
-            // Response with JSON in this standard format
-            res.json({"header": header, "body": {"docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount}});
-            // Close the connection
-            req.onSend();
+        ], (err, result) => {
+            let header = result;
+            var aggregate = req.modelFactory.get('Cashflow').aggregate([
+                {
+                    "$project": {
+                        "accountNumber": 1,
+                        "creditAmount": 1,
+                        "debitAmount": 1,
+                        "date": 1,
+                        "documentNumber": 1,
+                        "observations": "$observations.description"
+                    }
+                }
+            ]);
+            req.modelFactory.get('Cashflow').aggregatePaginate(aggregate, { page: page, limit: limit }, (err, result, pageCount, count) => {
+                if (err) {
+                    console.error(err);
+                    return next(err);
+                }
+                // Response with JSON in this standard format
+                res.json({ "header": header, "body": { "docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount } });
+                // Close the connection
+                req.onSend();
+            });
         });
-    });
 }
 
 
-exports.import = function(req, res, next) {
+exports.import = function (req, res, next) {
     obj = [];
     var form = new formidable.IncomingForm();
     form.maxFileSize = 200 * 1024 * 1024;
     form.parse(req, (err, fields, files) => {
-        if(err) return next(err);
+        if (err) return next(err);
         let count = Object.keys(files).length;
         console.log(count);
-        if(count >= 1) {
+        if (count >= 1) {
             var file = files.files.path;
             fs.readFile(file, (err, data) => {
                 //console.log(data.toString());
                 var body = JSON.parse(data.toString());
                 var count = Object.keys(body).length;
-                var iterate = new Promise(function(resolve, reject){
+                var iterate = new Promise(function (resolve, reject) {
                     var i = 0;
                     body.forEach(element => {
                         var debitAmount = numeral(element.DEBITO);
@@ -1090,14 +1155,14 @@ exports.import = function(req, res, next) {
                         let ISODate = moment(element.DATA, "DD/MM/YYYY").format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
                         //var ISODate = (new Date(moment(element.DATA, '')));
                         console.log('ISODate', ISODate);
-                        obj.push({accountNumber: element.CONTA, documentNumber: element.DOC, observations: element.OBS, debitAmount: debitAmount.value(), creditAmount: creditAmount.value(), date: {$date: ISODate}});
+                        obj.push({ accountNumber: element.CONTA, documentNumber: element.DOC, observations: element.OBS, debitAmount: debitAmount.value(), creditAmount: creditAmount.value(), date: { $date: ISODate } });
                         i++;
-                        if(count == i) {
+                        if (count == i) {
                             resolve(1);
                         }
                     });
                 });
-                iterate.then(function(result){
+                iterate.then(function (result) {
                     //console.log(JSON.stringify(obj));
                     var filename = tempfile('.json');
                     //console.log('Nombre archivo', filename);
@@ -1105,11 +1170,11 @@ exports.import = function(req, res, next) {
                     //console.log(obj);
                     var json = JSON.stringify(obj);
                     console.log(json);
-                    fs.writeFile(filename, json,  { flag: 'w' }, (err) => {
-                        if(err) return next(err);
+                    fs.writeFile(filename, json, { flag: 'w' }, (err) => {
+                        if (err) return next(err);
                         var database = req.database;
                         console.log(database);
-                        exec('mongoimport --uri "mongodb://touchsystem:4JK5Ky6O58nI9efw@touch1-shard-00-00-iuxja.mongodb.net:27017,touch1-shard-00-01-iuxja.mongodb.net:27017/' + database + '?ssl=true&replicaSet=Touch1-shard-0&authSource=admin" --collection Cashflow --drop --file '+filename+' --jsonArray', function(error, stdout, stderr) {
+                        exec('mongoimport --uri "mongodb://touchsystem:4JK5Ky6O58nI9efw@touch1-shard-00-00-iuxja.mongodb.net:27017,touch1-shard-00-01-iuxja.mongodb.net:27017/' + database + '?ssl=true&replicaSet=Touch1-shard-0&authSource=admin" --collection Cashflow --drop --file ' + filename + ' --jsonArray', function (error, stdout, stderr) {
                             //console.log('stdout: ', stdout);
                             //console.log('stderr: ', stderr);
                             if (error !== null) {
@@ -1162,9 +1227,9 @@ exports.detail = (req, res, next) => {
      * 
      */
     var id = req.params.id;
-    if(id != 'undefined' || id != 'null') {
-        req.modelFactory.get('Cashflow').find({_id: id}, (err, result) => {
-            if(err) {
+    if (id != 'undefined' || id != 'null') {
+        req.modelFactory.get('Cashflow').find({ _id: id }, (err, result) => {
+            if (err) {
                 console.error(err);
                 return next(err);
             }
@@ -1176,23 +1241,23 @@ exports.detail = (req, res, next) => {
 
 exports.update = (req, res, next) => {
     var id = req.params.id;
-    if(id != 'undefined' || id != 'null') {
+    if (id != 'undefined' || id != 'null') {
         var params = req.body;
         req.modelFactory.get('Cashflow').findById(id, (err, p) => {
-            if(!p)
+            if (!p)
                 next(new Error('No se ha podido encontrar el documento'));
             else {
                 p.documentNumber = params.documentNumber,
-                p.accountId = params.accountId,
-                p.observations = params.observations,
-                p.debitAmount = params.debitAmount,
-                p.creditAmount = params.creditAmount;
+                    p.accountId = params.accountId,
+                    p.observations = params.observations,
+                    p.debitAmount = params.debitAmount,
+                    p.creditAmount = params.creditAmount;
                 p.save(err => {
-                    if(err) {
+                    if (err) {
                         console.error(err);
                         return next(err);
                     }
-                    res.json({'status': 1});
+                    res.json({ 'status': 1 });
                     req.onSend();
                 })
             }
