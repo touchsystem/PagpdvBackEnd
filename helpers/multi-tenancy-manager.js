@@ -64,15 +64,18 @@ module.exports = function (req, res, next) {
                 socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
                 useNewUrlParser: true
             };
+
+            // ------- CONNECT TO MONGODB -------
             // Producao
-            // var connection = mongoose.createConnection('mongodb://touchsystem:4JK5Ky6O58nI9efw@touch1-shard-00-00-iuxja.mongodb.net:27017,touch1-shard-00-01-iuxja.mongodb.net:27017/' + database + '?ssl=true&replicaSet=Touch1-shard-0&authSource=admin', options);
+            var connection = mongoose.createConnection('mongodb://touchsystem:4JK5Ky6O58nI9efw@touch1-shard-00-00-iuxja.mongodb.net:27017,touch1-shard-00-01-iuxja.mongodb.net:27017/' + database + '?ssl=true&replicaSet=Touch1-shard-0&authSource=admin', options);
 
             //Local
-            var connection = mongoose.createConnection('mongodb://localhost:27017/' + database + '?ssl=false&authSource=admin', options);
-            console.log("NOME DA CONEXAO -> " + connection.name);
+            // var connection = mongoose.createConnection('mongodb://localhost:27017/' + database + '?ssl=false&authSource=admin', options);
+            // console.log("NOME DA CONEXAO -> " + connection.name);
+
+            // ------- END CONNECT TO MONGODB -------
 
             // Handle on close
-
             connection.on('close', function () {
 
                 console.log('closed', connection.name);
