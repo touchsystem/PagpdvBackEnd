@@ -32,7 +32,7 @@ const express = require('express'),
     router = express.Router(),
     bodyParser = require('body-parser'),
     cors = require('cors');
-    S3Manager = require('./helpers/S3-manager'),
+S3Manager = require('./helpers/S3-manager'),
     helmet = require('helmet'),
     moment = require('moment'),
     winston = require('winston');
@@ -63,8 +63,8 @@ const TestRoute = require('./test/route');
 
 
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json({"limit": '10mb'}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ "limit": '10mb' }));
 
 // Enable CORS
 
@@ -87,14 +87,14 @@ const logger = winston.createLogger({
 
 // Enable helmet to avoid vulnerabilities on HTTP requests
 
-/* Used for debug purposes */ 
+/* Used for debug purposes */
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     console.log('method', req.method);
     console.log('url', req.url);
     console.log('path', req.path);
     console.log('params', req.params);
-    console.log('body', req.body); 
+    console.log('body', req.body);
     next();
 });
 
@@ -176,339 +176,556 @@ app.get('/maintenance/sales/delete', (req, res, next) => {
     var Pendants = req.modelFactory.get('Pendants');
     var Cashflow = req.modelFactory.get('Cashflow');
 
-    Stock.deleteMany({date: new Date(date)}, (err, result) => {
-        if(err) return next(err);
+    Stock.deleteMany({ date: new Date(date) }, (err, result) => {
+        if (err) return next(err);
     });
 
-    Documents.deleteMany({date: new Date(date)}, (err, result) => {
-        if(err) return next(err);
+    Documents.deleteMany({ date: new Date(date) }, (err, result) => {
+        if (err) return next(err);
     });
 
-    Pendants.deleteMany({date: new Date(date)}, (err, result) => {
-        if(err) return next(err);
+    Pendants.deleteMany({ date: new Date(date) }, (err, result) => {
+        if (err) return next(err);
     });
 
-    Cashflow.deleteMany({date: new Date(date)}, (err, result) => {
-        if(err) return next(err);
+    Cashflow.deleteMany({ date: new Date(date) }, (err, result) => {
+        if (err) return next(err);
     });
 
-    res.send({"status": 1});
+    res.send({ "status": 1 });
     req.onSend();
 });
 
+
 app.get('/api/v1/dashboard', (req, res, next) => {
+    var CashFlow = req.modelFactory.get('Cashflow');
+    var Accounts = req.modelFactory.get('Accounts');
     var Documents = req.modelFactory.get('Documents');
     var Tables = req.modelFactory.get('Tables');
     var Sales = req.modelFactory.get('Sales');
     var Stock = req.modelFactory.get('Stock');
     var Orders = req.modelFactory.get('Orders');
-    var tables, documents, orders, stock;
-    Orders.aggregate(
-        [
-            { 
-                "$project" : {
-                    "finalized" : {
-                        "$cond" : [
-                            {
-                                "$eq" : [
-                                    "$status", 
-                                    false
-                                ]
-                            }, 
-                            {
-                                "$sum" : 1
-                            }, 
-                            0
-                        ]
-                    }, 
-                    "opened" : {
-                        "$cond" : [
-                            {
-                                "$eq" : [
-                                    "$status", 
-                                    true
-                                ]
-                            }, 
-                            {
-                                "$sum" : 1
-                            }, 
-                            0
-                        ]
-                    }
-                }
-            }, 
-            { 
-                "$group" : {
-                    "_id" : null, 
-                    "opened" : {
-                        "$sum" : "$opened"
-                    }, 
-                    "finalized" : {
-                        "$sum" : "$finalized"
-                    }
-                }
-            },
-            {   "$project": {
-                "_id": 0,
-                "opened": 1,
-                "finalized": 1
-            }}
-        ], (err, result) => {
-            orders = result;
+    var tables, documents, orders, stock, cashflow, accounts;
+
+    const caixas = ["111102", "111106", "111204", "111202", "111201", "111101"];
+
+
+
+    // Orders.aggregate(
+    //     [
+    //         { 
+    //             "$project" : {
+    //                 "finalized" : {
+    //                     "$cond" : [
+    //                         {
+    //                             "$eq" : [
+    //                                 "$status", 
+    //                                 false
+    //                             ]
+    //                         }, 
+    //                         {
+    //                             "$sum" : 1
+    //                         }, 
+    //                         0
+    //                     ]
+    //                 }, 
+    //                 "opened" : {
+    //                     "$cond" : [
+    //                         {
+    //                             "$eq" : [
+    //                                 "$status", 
+    //                                 true
+    //                             ]
+    //                         }, 
+    //                         {
+    //                             "$sum" : 1
+    //                         }, 
+    //                         0
+    //                     ]
+    //                 }
+    //             }
+    //         }, 
+    //         { 
+    //             "$group" : {
+    //                 "_id" : null, 
+    //                 "opened" : {
+    //                     "$sum" : "$opened"
+    //                 }, 
+    //                 "finalized" : {
+    //                     "$sum" : "$finalized"
+    //                 }
+    //             }
+    //         },
+    //         {   "$project": {
+    //             "_id": 0,
+    //             "opened": 1,
+    //             "finalized": 1
+    //         }}
+    //     ], (err, result) => {
+    //         orders = result;
+    //     });
+
+    const inicioMes = moment().startOf('month').toDate();
+    const fimMes = moment().endOf('month').toDate();
+    // const inicioMes = moment('2025-05-01').toDate();
+    console.log("inicioMes ", inicioMes);
+    // const fimMes = moment('2025-05-28').toDate();
+    console.log("fim mes ", fimMes);
+    function getAccounts() {
+        return Accounts.aggregate([
+            { $match: { accountNumber: { $in: caixas }, status: 0 } },
+            { $project: { _id: 0, accountNumber: 1, denomination: 1, currency: 1 } }
+        ]).exec().then(result => {
+            return result.sort((a, b) => {
+                const aIsBanco = a.denomination.toUpperCase().startsWith('BANCO');
+                const bIsBanco = b.denomination.toUpperCase().startsWith('BANCO');
+                const aIsCaixa = a.denomination.toUpperCase().startsWith('CAIXA');
+                const bIsCaixa = b.denomination.toUpperCase().startsWith('CAIXA');
+                if (aIsBanco && !bIsBanco) return -1;
+                if (!aIsBanco && bIsBanco) return 1;
+                if (aIsCaixa && !bIsCaixa) return 1;
+                if (!aIsCaixa && bIsCaixa) return -1;
+                return (a.denomination || '').localeCompare(b.denomination || '');
+            });
+        });
+    }
+    function getCashflow() {
+        return CashFlow.aggregate([
+            { $match: { accountNumber: { $in: caixas } } },
+            { $group: { _id: "$accountNumber", saldo: { $sum: { $subtract: ["$debitAmount", "$creditAmount"] } }, count: { $sum: 1 } } }
+        ]).exec();
+    }
+    // ,
+    function getSaldoAcumuladoPorCaixa() {
+        return CashFlow.find({
+            accountNumber: { $in: caixas },
+            date: { $gte: inicioMes, $lte: fimMes }
+        }).exec().then(lancamentos => {
+            const saldosPorCaixaPorDia = {};
+            lancamentos.forEach(lancamento => {
+                const caixa = lancamento.accountNumber;
+                const dia = lancamento.date.toISOString().substr(0, 10);
+                if (!saldosPorCaixaPorDia[caixa]) saldosPorCaixaPorDia[caixa] = {};
+                if (!saldosPorCaixaPorDia[caixa][dia]) saldosPorCaixaPorDia[caixa][dia] = 0;
+                saldosPorCaixaPorDia[caixa][dia] += (lancamento.debitAmount - lancamento.creditAmount);
+            });
+            const saldoAcumuladoPorCaixa = {};
+            Object.keys(saldosPorCaixaPorDia).forEach(caixa => {
+                let saldo = 0;
+                saldoAcumuladoPorCaixa[caixa] = [];
+                const dias = Object.keys(saldosPorCaixaPorDia[caixa]).sort();
+                dias.forEach(dia => {
+                    saldo += saldosPorCaixaPorDia[caixa][dia];
+                    saldoAcumuladoPorCaixa[caixa].push({ dia, saldo });
+                });
+            });
+            return saldoAcumuladoPorCaixa;
+        });
+    }
+
+    function getDocuments() {
+        return Documents.aggregate([
+            { "$unwind": { "path": "$invoices" } },
+            { "$project": { "invoiceId": "$invoices.id", "documentNumber": "$invoices.documentNumber", "date": "$invoices.date", "amount": "$invoices.amount", "status": "$invoices.status", "expirationDate": "$invoices.expirationDate", "payDate": "$invoices.payDate", "documentType": "$documentType" } },
+            { "$match": { "status": 0 } },
+            { "$group": { "_id": "$documentType", "amount": { "$sum": "$amount" } } },
+            { "$project": { "_id": 0, "name": { "$cond": [{ "$eq": ["$_id", 2] }, "documentsToPay", "documentsToReceive"] }, "amount": 1 } }
+        ]).exec();
+    }
+
+    Promise.all([
+        getAccounts(),
+        getCashflow(),
+        getSaldoAcumuladoPorCaixa(),
+        getDocuments()
+    ]).then(([accounts, cashflow, saldoAcumuladoPorCaixa, documents]) => {
+        let documentsToPay, documentsToReceive;
+        if (typeof documents[1] != 'undefined') {
+            documentsToPay = documents[1].amount;
+        }
+        if (typeof documents[0] != 'undefined') {
+            documentsToReceive = documents[0].amount;
+        }
+        res.send({
+            documentsToPay,
+            documentsToReceive,
+            cashflow,
+            accounts,
+            saldoAcumuladoPorCaixas: saldoAcumuladoPorCaixa
+        });
+        req.onSend();
+    }).catch(err => {
+        console.error(err);
+        res.status(500).send({ error: 'Erro ao buscar dados' });
+    });
+    /*Accounts.aggregate([
+        {
+            $match: {
+                accountNumber: { $in: caixas },
+                status: 0
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                accountNumber: 1,
+                denomination: 1
+            }
+        }
+    ], (err, result) => {
+
+        if (err) {
+            console.error(err);
+        } else {
+            accounts = result.sort((a, b) => {
+                const aIsBanco = a.denomination.toUpperCase().startsWith('BANCO');
+                const bIsBanco = b.denomination.toUpperCase().startsWith('BANCO');
+                const aIsCaixa = a.denomination.toUpperCase().startsWith('CAIXA');
+                const bIsCaixa = b.denomination.toUpperCase().startsWith('CAIXA');
+
+                if (aIsBanco && !bIsBanco) return -1;
+                if (!aIsBanco && bIsBanco) return 1;
+                if (aIsCaixa && !bIsCaixa) return 1;
+                if (!aIsCaixa && bIsCaixa) return -1;
+
+                // Se ambos são do mesmo tipo ou nenhum dos dois, ordena por nome
+                return (a.denomination || '').localeCompare(b.denomination || '');
+            });
+            console.log(accounts);
+        }
+        // res.send({ cashflow });
+        // req.onSend();
+    }
+    )*/
+
+    /*
+    CashFlow.aggregate([
+        {
+            $match: {
+                accountNumber: { $in: caixas }
+            }
+        },
+        {
+            $group: {
+                _id: "$accountNumber",
+                saldo: { $sum: { $subtract: ["$debitAmount", "$creditAmount"] } },
+                count: { $sum: 1 }
+            }
+        }
+    ], (err, result) => {
+        cashflow = result;
+        if (err) {
+            console.error(err);
+        } else {
+            console.log(result);
+        }
+        // res.send({ cashflow });
+        // req.onSend();
+    }
+    )*/
+
+    // const inicioMes = new Date(2025, 3, 1, 0, 0, 0);
+    // const fimMes = new Date(2025, 5 + 1, 0, 23, 59, 59);
+
+    /*
+    const saldosPorCaixaPorDia = {};
+    const saldoAcumuladoPorCaixa = {};
+    CashFlow.find({
+        date: { $gte: inicioMes, $lte: fimMes }
+    }).exec((err, lancamentos) => {
+        if (err) {
+            return "Entrou no erro";
+        }
+        lancamentos.forEach(lancamento => {
+            const caixa = lancamento.accountNumber;
+            const dia = lancamento.date.toISOString().substr(0, 10);
+            if (!saldosPorCaixaPorDia[caixa]) saldosPorCaixaPorDia[caixa] = {};
+            if (!saldosPorCaixaPorDia[caixa][dia]) saldosPorCaixaPorDia[caixa][dia] = 0;
+
+            saldosPorCaixaPorDia[caixa][dia] += (lancamento.debitAmount - lancamento.creditAmount);
         });
 
-    Documents.aggregate(
-        [
-            { 
-                "$unwind" : {
-                    "path" : "$invoices"
-                }
-            }, 
-            { 
-                "$project" : {
-                    "invoiceId" : "$invoices.id", 
-                    "documentNumber" : "$invoices.documentNumber", 
-                    "date" : "$invoices.date", 
-                    "amount" : "$invoices.amount", 
-                    "status" : "$invoices.status", 
-                    "expirationDate" : "$invoices.expirationDate", 
-                    "payDate" : "$invoices.payDate", 
-                    "documentType" : "$documentType"
-                }
-            }, 
-            { 
-                "$match" : {
-                    "status" : 0
-                }
-            }, 
-            { 
-                "$group" : {
-                    "_id" : "$documentType", 
-                    "amount" : {
-                        "$sum" : "$amount"
-                    }
-                }
-            }, 
-            { 
-                "$project" : {
-                    "_id" : 0,
-                    "name" : {
-                        "$cond" : [
-                            {
-                                "$eq" : [
-                                    "$_id", 
-                                    2
-                                ]
-                            }, 
-                            "documentsToPay", 
-                            "documentsToReceive"
-                        ]
-                    }, 
-                    "amount" : 1
-                }
-            }
-        ], (err, result) => {
-          console.log(result);
-          documents = result;
-      });
-        Sales.aggregate(
-        [
-            { 
-                "$match" : {
-                    "isProcessed" : false
-                }
-            }, 
-            { 
-                "$project" : {
-                    "total" : {
-                        "$subtract" : [
-                            "$total", 
-                            {
-                                "$arrayElemAt" : [
-                                    "$discounts.amount", 
-                                    0
-                                ]
-                            }
-                        ]
-                    }
-                }
-            }, 
-            { 
-                "$group" : {
-                    "_id" : null, 
-                    "amount" : {
-                        "$sum" : "$total"
-                    }
-                }
-            }, 
-            { 
-                "$match" : {
-    
-                }
-            }
-        ], (err, result) => {
-            let sales = result;
-            Stock.aggregate([
-                {
-                    "$match": {"outputType": "sales"}
-                },
-                { 
-                    "$sort" : {
-                        "createdAt" : -1
-                    }
-                }, 
-                { 
-                    "$group" : {
-                        "_id" : null, 
-                        "amount" : {
-                            "$sum" : "$subtotalPrice"
-                        }
-                    }
-                }
-            ], (err, result) => {
-                    stock = result;
+
+
+        Object.keys(saldosPorCaixaPorDia).forEach(caixa => {
+            let saldo = 0;
+            saldoAcumuladoPorCaixa[caixa] = [];
+            // Ordena os dias
+            const dias = Object.keys(saldosPorCaixaPorDia[caixa]).sort();
+            dias.forEach(dia => {
+                saldo += saldosPorCaixaPorDia[caixa][dia];
+                saldoAcumuladoPorCaixa[caixa].push({ dia, saldo });
             });
-            let stockAmount = 0;
-            if(typeof stock !== 'undefined' && stock.length > 0) {
-                stockAmount = stock[0].amount;
-            } else {
-                stockAmount = 0;
-            }
-            if(typeof sales !== 'undefined' && sales.length > 0) {
-                salesAmount = sales[0].amount;
-            } else {
-                salesAmount = 0;
-            }
-            console.log('Stock Amount', stockAmount, 'Sales Amount', salesAmount);
-        })
-        
-      Tables.aggregate(
-        [
-          { 
-              "$project" : {
-                  "opened" : {
-                      "$cond" : [
-                          {
-                              "$eq" : [
-                                  "$condition", 
-                                  "Free"
-                              ]
-                          }, 
-                          {
-                              "$sum" : 1
-                          }, 
-                          0
-                      ]
-                  }, 
-                  "closed" : {
-                      "$cond" : [
-                          {
-                              "$ne" : [
-                                  "$condition", 
-                                  "Free"
-                              ]
-                          }, 
-                          {
-                              "$sum" : 1
-                          }, 
-                          0
-                      ]
-                  }
-              }
-          }, 
-          { 
-              "$group" : {
-                  "_id" : null, 
-                  "opened" : {
-                      "$sum" : "$opened"
-                  }, 
-                  "closed" : {
-                      "$sum" : "$closed"
-                  }
-              }
-          }, 
-          { 
-              "$project" : {
-                  "_id" : 0, 
-                  "opened" : 1, 
-                  "closed" : 1
-              }
-          }
-      ], (err, result) => {
-          tables = result;
-          console.log('llego')
-          var salesPerHour = {
-            'amount': 0,
-            'quantity': 0
-          };
-          var salesPerDay = {
-            'amount': 0,
-            'quantity': 0
-          };
-          var salesPerWeek = {
-            'amount': 0,
-            'quantity': 0
-          };
-          var salesPerMonth = {
-            'amount': 0,
-            'quantity': 0
-          };
-          
-          
-          (async () => {
-            hourDate = moment().subtract(1, 'hours').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
-            dayDate = moment().subtract(1, 'days').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
-            weekDate = moment().subtract(1, 'weeks').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
-            monthDate = moment().subtract(1, 'months').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
+        });
 
-            var hourSales = await Sales.find({"status": {$ne: null}, "date": {$gte: new Date(hourDate)}}).exec();
-            var daySales = await Sales.find({"status": {$ne: null}, "date": {$gte: new Date(dayDate)}}).exec();
-            var weekSales = await Sales.find({"status": {$ne: null}, "date": {$gte: new Date(weekDate)}}).exec();
-            var monthSales = await Sales.find({"status": {$ne: null}, "date": {$gte: new Date(monthDate)}}).exec();
+        console.log("Saldo Acumulador por Caixa - ", saldoAcumuladoPorCaixa);
+    }) */
 
-            salesPerHour.quantity = Object.keys(hourSales).length; 
-            for(let i = 0; i < Object.keys(hourSales).length; i++) {
-              salesPerHour.amount += (hourSales[i].total);
-            }
-            salesPerDay.quantity = Object.keys(daySales).length;
-            for(let i = 0; i < Object.keys(daySales).length; i++) {
-              salesPerDay.amount += (daySales[i].total);
-            }
 
-            salesPerWeek.quantity = Object.keys(weekSales).length;
-            for(let i = 0; i < Object.keys(weekSales).length; i++) {
-              salesPerWeek.amount += (weekSales[i].total);
-            }
+    /*
+       Documents.aggregate(
+           [
+               {
+                   "$unwind": {
+                       "path": "$invoices"
+                   }
+               },
+               {
+                   "$project": {
+                       "invoiceId": "$invoices.id",
+                       "documentNumber": "$invoices.documentNumber",
+                       "date": "$invoices.date",
+                       "amount": "$invoices.amount",
+                       "status": "$invoices.status",
+                       "expirationDate": "$invoices.expirationDate",
+                       "payDate": "$invoices.payDate",
+                       "documentType": "$documentType"
+                   }
+               },
+               {
+                   "$match": {
+                       "status": 0
+                   }
+               },
+               {
+                   "$group": {
+                       "_id": "$documentType",
+                       "amount": {
+                           "$sum": "$amount"
+                       }
+                   }
+               },
+               {
+                   "$project": {
+                       "_id": 0,
+                       "name": {
+                           "$cond": [
+                               {
+                                   "$eq": [
+                                       "$_id",
+                                       2
+                                   ]
+                               },
+                               "documentsToPay",
+                               "documentsToReceive"
+                           ]
+                       },
+                       "amount": 1
+                   }
+               }
+           ], (err, result) => {
+               console.log(result);
+               documents = result;
+   
+               var documentsToPay, documentsToReceive;
+               if (typeof documents[1] != 'undefined') {
+                   documentsToPay = documents[1].amount
+               }
+               if (typeof documents[0] != 'undefined') {
+                   documentsToReceive = documents[0].amount;
+               }
+   
+               res.send({ 'documentsToPay': documentsToPay, 'documentsToReceive': documentsToReceive, 'cashflow': cashflow, 'accounts': accounts, 'saldoAcumuladoPorCaixas': saldoAcumuladoPorCaixa });
+               req.onSend();
+           }); */
 
-            salesPerMonth.quantity = Object.keys(monthSales).length;
-            for(let i = 0; i < Object.keys(monthSales).length; i++) {
-              salesPerMonth.amount += (monthSales[i].total);
-            }
- 
+    // Sales.aggregate(
+    //     [
+    //         {
+    //             "$match": {
+    //                 "isProcessed": false
+    //             }
+    //         },
+    //         {
+    //             "$project": {
+    //                 "total": {
+    //                     "$subtract": [
+    //                         "$total",
+    //                         {
+    //                             "$arrayElemAt": [
+    //                                 "$discounts.amount",
+    //                                 0
+    //                             ]
+    //                         }
+    //                     ]
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             "$group": {
+    //                 "_id": null,
+    //                 "amount": {
+    //                     "$sum": "$total"
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             "$match": {
 
-            var documentsToPay, documentsToReceive, ordersOpened, ordersFinalized, tablesCount = 0;
-            if(typeof documents[1] != 'undefined') {
-                documentsToPay = documents[1].amount
-            }
-            if(typeof documents[0] != 'undefined') {
-                documentsToReceive = documents[0].amount;
-            }
-            if(typeof orders[0] != 'undefined') {
-                ordersOpened = orders[0].opened;
-                ordersFinalized = orders[0].finalized;
-            }
-            if(typeof tables[0] != 'undefined'){
-                tablesCount = tables[0];
-            }
-            res.send({'stock': stock, 'tables': tablesCount, 'documentsToPay': documentsToPay, 'documentsToReceive': documentsToReceive, 'salesPerHour': salesPerHour, 'salesPerDay': salesPerDay, 'salesPerWeek': salesPerWeek, 'salesPerMonth': salesPerMonth, 'ordersOpened': ordersOpened, 'ordersFinalized': ordersFinalized});
-            req.onSend();
-        })();
-    });
+    //             }
+    //         }
+    //     ], (err, result) => {
+    //         let sales = result;
+    //         Stock.aggregate([
+    //             {
+    //                 "$match": { "outputType": "sales" }
+    //             },
+    //             {
+    //                 "$sort": {
+    //                     "createdAt": -1
+    //                 }
+    //             },
+    //             {
+    //                 "$group": {
+    //                     "_id": null,
+    //                     "amount": {
+    //                         "$sum": "$subtotalPrice"
+    //                     }
+    //                 }
+    //             }
+    //         ], (err, result) => {
+    //             stock = result;
+    //         });
+    //         let stockAmount = 0;
+    //         if (typeof stock !== 'undefined' && stock.length > 0) {
+    //             stockAmount = stock[0].amount;
+    //         } else {
+    //             stockAmount = 0;
+    //         }
+    //         if (typeof sales !== 'undefined' && sales.length > 0) {
+    //             salesAmount = sales[0].amount;
+    //         } else {
+    //             salesAmount = 0;
+    //         }
+    //         console.log('Stock Amount', stockAmount, 'Sales Amount', salesAmount);
+    //     })
+
+    // Tables.aggregate(
+    //     [
+    //         {
+    //             "$project": {
+    //                 "opened": {
+    //                     "$cond": [
+    //                         {
+    //                             "$eq": [
+    //                                 "$condition",
+    //                                 "Free"
+    //                             ]
+    //                         },
+    //                         {
+    //                             "$sum": 1
+    //                         },
+    //                         0
+    //                     ]
+    //                 },
+    //                 "closed": {
+    //                     "$cond": [
+    //                         {
+    //                             "$ne": [
+    //                                 "$condition",
+    //                                 "Free"
+    //                             ]
+    //                         },
+    //                         {
+    //                             "$sum": 1
+    //                         },
+    //                         0
+    //                     ]
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             "$group": {
+    //                 "_id": null,
+    //                 "opened": {
+    //                     "$sum": "$opened"
+    //                 },
+    //                 "closed": {
+    //                     "$sum": "$closed"
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             "$project": {
+    //                 "_id": 0,
+    //                 "opened": 1,
+    //                 "closed": 1
+    //             }
+    //         }
+    //     ], (err, result) => {
+    //         tables = result;
+    //         console.log('llego')
+    //         var salesPerHour = {
+    //             'amount': 0,
+    //             'quantity': 0
+    //         };
+    //         var salesPerDay = {
+    //             'amount': 0,
+    //             'quantity': 0
+    //         };
+    //         var salesPerWeek = {
+    //             'amount': 0,
+    //             'quantity': 0
+    //         };
+    //         var salesPerMonth = {
+    //             'amount': 0,
+    //             'quantity': 0
+    //         };
+
+
+    //         (async () => {
+    //             hourDate = moment().subtract(1, 'hours').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
+    //             dayDate = moment().subtract(1, 'days').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
+    //             weekDate = moment().subtract(1, 'weeks').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
+    //             monthDate = moment().subtract(1, 'months').format("YYYY-MM-DDT").toString().concat('00:00:00.000-0200');
+
+    //             var hourSales = await Sales.find({ "status": { $ne: null }, "date": { $gte: new Date(hourDate) } }).exec();
+    //             var daySales = await Sales.find({ "status": { $ne: null }, "date": { $gte: new Date(dayDate) } }).exec();
+    //             var weekSales = await Sales.find({ "status": { $ne: null }, "date": { $gte: new Date(weekDate) } }).exec();
+    //             var monthSales = await Sales.find({ "status": { $ne: null }, "date": { $gte: new Date(monthDate) } }).exec();
+
+    //             salesPerHour.quantity = Object.keys(hourSales).length;
+    //             for (let i = 0; i < Object.keys(hourSales).length; i++) {
+    //                 salesPerHour.amount += (hourSales[i].total);
+    //             }
+    //             salesPerDay.quantity = Object.keys(daySales).length;
+    //             for (let i = 0; i < Object.keys(daySales).length; i++) {
+    //                 salesPerDay.amount += (daySales[i].total);
+    //             }
+
+    //             salesPerWeek.quantity = Object.keys(weekSales).length;
+    //             for (let i = 0; i < Object.keys(weekSales).length; i++) {
+    //                 salesPerWeek.amount += (weekSales[i].total);
+    //             }
+
+    //             salesPerMonth.quantity = Object.keys(monthSales).length;
+    //             for (let i = 0; i < Object.keys(monthSales).length; i++) {
+    //                 salesPerMonth.amount += (monthSales[i].total);
+    //             }
+
+
+    //             var documentsToPay, documentsToReceive, ordersOpened, ordersFinalized, tablesCount = 0;
+    //             if (typeof documents[1] != 'undefined') {
+    //                 documentsToPay = documents[1].amount
+    //             }
+    //             if (typeof documents[0] != 'undefined') {
+    //                 documentsToReceive = documents[0].amount;
+    //             }
+    //             if (typeof orders[0] != 'undefined') {
+    //                 ordersOpened = orders[0].opened;
+    //                 ordersFinalized = orders[0].finalized;
+    //             }
+    //             if (typeof tables[0] != 'undefined') {
+    //                 tablesCount = tables[0];
+    //             }
+    //             res.send({ 'stock': stock, 'tables': tablesCount, 'documentsToPay': documentsToPay, 'documentsToReceive': documentsToReceive, 'salesPerHour': salesPerHour, 'salesPerDay': salesPerDay, 'salesPerWeek': salesPerWeek, 'salesPerMonth': salesPerMonth, 'ordersOpened': ordersOpened, 'ordersFinalized': ordersFinalized });
+    //             req.onSend();
+    //         })();
+    //     });
 });
-
 // Catch 404 error and handle
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     var err = new Error('Resource not found or missed required parameter: ' + req.url);
     err.status = 404;
     console.error(err);
@@ -517,7 +734,7 @@ app.use(function(req, res, next) {
 
 // Handle all the errors and set the status to the response
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // formulate an error response here
     res.status(err.status || 500);
     console.log(err);
@@ -529,7 +746,7 @@ app.use(function(err, req, res, next) {
 });
 
 
-app.listen(3000, function() {
+app.listen(3000, function () {
 
     // We are done!
     console.log("Listening..");

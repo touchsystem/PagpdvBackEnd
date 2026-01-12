@@ -36,11 +36,12 @@ exports.create = (req, res, next) => {
      * 
      */
     var params = req.body;
+    console.log("PARAMS -> " + req.body);
     var obj = {
         additionalInformation: params.additionalInformation,
         accountNumber: params.accountNumber,
         // TODO tomar por defecto de configuraciones
-        currency: 'BRL',
+        currency: params.currency,
         denomination: params.denomination,
         level: params.level,
     }
@@ -342,13 +343,16 @@ exports.update = (req, res, next) => {
      * 
      */
     var id = req.params.id;
+
     if (id != 'undefined' || id != 'null') {
         var params = req.body;
+        console.log("PARAMS TIPO DA CONTA -> " + params.currency);
         req.modelFactory.get('Accounts').findById(id, (err, p) => {
             if (!p) return next(new Error('There is a problem with a document or doesnt exist'));
             p.additionalInformation = params.additionalInformation,
                 p.accountNumber = params.accountNumber,
                 p.denomination = params.denomination,
+                p.currency = params.currency,
                 p.level = params.level;
             p.save(err => {
                 if (err) {

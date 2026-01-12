@@ -5,11 +5,11 @@ var numeral = require('numeral');
 var moment = require('moment');
 var pdf = require('phantom-html2pdf');
 
-    // documentType: Tipo Documento
-    // Documento a Cobrar: 1
-    // Documento a Pagar: 2
-    // Documento a Cobrar - Contrato: 3
-    //var Shortcut = req.modelFactory.getModels('Shortcuts').Shortcuts(obj);
+// documentType: Tipo Documento
+// Documento a Cobrar: 1
+// Documento a Pagar: 2
+// Documento a Cobrar - Contrato: 3
+//var Shortcut = req.modelFactory.getModels('Shortcuts').Shortcuts(obj);
 
 /**
  * 
@@ -31,50 +31,52 @@ exports.create = (req, res, next) => {
 
     params.products.forEach(element => {
         productsItemsId.push(mongoose.Types.ObjectId(element.productId));
-        products.push({'productId': mongoose.Types.ObjectId(element.productId), 'measure': element.quantity, 'unitPrice': element.unitPrice, 'subtotalPrice': element.subtotalPrice, 'stockGroupId': null, 'transactionId': transactionId, 'date': date});
+        products.push({ 'productId': mongoose.Types.ObjectId(element.productId), 'measure': element.quantity, 'unitPrice': element.unitPrice, 'subtotalPrice': element.subtotalPrice, 'stockGroupId': null, 'transactionId': transactionId, 'date': date });
     });
     params.invoices.forEach(element => {
         timestamp = new Date().getTime();
-        invoices.push({'id': timestamp, 'documentNumber': params.documentNumber, 'date': element.date, 'amount': element.amount, 'status': element.status, 'expirationDate': element.expirationDate, 'observations': element.observations});
+        invoices.push({ 'id': timestamp, 'documentNumber': params.documentNumber, 'date': element.date, 'amount': element.amount, 'status': element.status, 'expirationDate': element.expirationDate, 'observations': element.observations });
     });
-    if(!params.businessPartnerId) {
+    if (!params.businessPartnerId) {
         businessPartnerId = null;
     } else {
         businessPartnerId = params.businessPartnerId;
     }
 
     var obj = {
-       businessPartnerId: businessPartnerId,
-       documentAmount: params.documentAmount,
-       documentNumber: params.documentNumber,
-       invoices: invoices,
-       products: products,
-       documentType: params.documentType,
-       observations: params.observations,
-       transactionId: transactionId,
-       date: params.date,
-       emissionDate: params.emissionDate,
-       accountNumber: params.accountNumber
+        businessPartnerId: businessPartnerId,
+        currency: params.currency,
+        documentAmount: params.documentAmount,
+        documentNumber: params.documentNumber,
+        invoices: invoices,
+        products: products,
+        documentType: params.documentType,
+        observations: params.observations,
+        transactionId: transactionId,
+        date: params.date,
+        emissionDate: params.emissionDate,
+        accountNumber: params.accountNumber
     }
 
-    var Documents =  req.modelFactory.get('Documents')(obj);
+    var Documents = req.modelFactory.get('Documents')(obj);
+    console.log(obj);
     // Creates the document
     Documents.save((err, data) => {
-        if(err) {
+        if (err) {
             console.error(err);
             return next(err);
         }
-        if(data) {
+        if (data) {
             var cashflow = [];
             var documentId = data._id;
             var hasProduct;
             // Check the Document Type, if has products then push it to the products array
-            if(params.documentType == 2) {
-                if(Object.keys(products).length > 0) {
+            if (params.documentType == 2) {
+                if (Object.keys(products).length > 0) {
                     hasProduct = 1;
                     // Insert the products
                     req.modelFactory.get('Stock').insertMany(products, (err, result) => {
-                        if(err) return next(err);
+                        if (err) return next(err);
                     });
                 } else {
                     console.log("There isn't products");
@@ -88,108 +90,82 @@ exports.create = (req, res, next) => {
             hasProduct == 1 ? accountNumber = "113101" : accountNumber = params.accountNumber;
             // Get the settings for the cashflow, it depends on the type of the document
             console.log(productsItemsId);
-            if(hasProduct == 1) {
+            if (hasProduct == 1) {
                 console.log(productsItemsId);
-                setTimeout(function(){
+                setTimeout(function () {
                     Stock.aggregate(
                         [
                             {
-                                "$sort": {"createdAt": 1}
+                                "$sort": { "createdAt": 1 }
                             },
                             {
                                 "$match": {
-                                    "productId": {"$in": productsItemsId}
+                                    "productId": { "$in": productsItemsId }
                                 }
                             },
-                            { 
-                                "$match" : {
-                                    "measure" : {
-                                        "$gt" : 0
+                            {
+                                "$match": {
+                                    "measure": {
+                                        "$gt": 0
                                     }
                                 }
-                            }, 
-                            { 
-                                "$group" : {
-                                    "_id" : "$productId", 
-                                    "products" : {
-                                        "$push" : {
-                                            "productId" : "$productId", 
-                                            "measure" : "$measure", 
-                                            "unitPrice" : "$unitPrice", 
-                                            "subtotalPrice" : "$subtotalPrice", 
-                                            "createdAt" : "$createdAt"
+                            },
+                            {
+                                "$group": {
+                                    "_id": "$productId",
+                                    "products": {
+                                        "$push": {
+                                            "productId": "$productId",
+                                            "measure": "$measure",
+                                            "unitPrice": "$unitPrice",
+                                            "subtotalPrice": "$subtotalPrice",
+                                            "createdAt": "$createdAt"
                                         }
                                     }
                                 }
-                            }, 
-                            { 
-                                "$project" : {
-                                    "_id" : 1, 
-                                    "products" : {
-                                        "$slice" : [
-                                            "$products", 
+                            },
+                            {
+                                "$project": {
+                                    "_id": 1,
+                                    "products": {
+                                        "$slice": [
+                                            "$products",
                                             10
                                         ]
                                     }
                                 }
                             },
-                            { 
-                                "$unwind" : {
-                                    "path" : "$products"
+                            {
+                                "$unwind": {
+                                    "path": "$products"
                                 }
                             },
-                            { 
-                                "$project" : {
-                                "measure" : "$products.measure", 
-                                "unitPrice" : "$products.unitPrice", 
-                                "subtotalPrice" : "$products.subtotalPrice"
-                            }
-                        }, 
-                        { 
-                            "$group" : {
-                                "_id" : "$_id", 
-                                "measure" : {
-                                    "$sum" : "$measure"
-                                }, 
-                                "averageCost" : {
-                                    "$avg" : "$unitPrice"
+                            {
+                                "$project": {
+                                    "measure": "$products.measure",
+                                    "unitPrice": "$products.unitPrice",
+                                    "subtotalPrice": "$products.subtotalPrice"
+                                }
+                            },
+                            {
+                                "$group": {
+                                    "_id": "$_id",
+                                    "measure": {
+                                        "$sum": "$measure"
+                                    },
+                                    "averageCost": {
+                                        "$avg": "$unitPrice"
+                                    }
                                 }
                             }
-                        }
-                    ], (err, result) => {
-                        if(err) return next(err);
-                        console.log(result);
-                        for(let i = 0; i < Object.keys(result).length; i++) {
-                            console.log('update');
-                            Products.update({_id: result[i]._id}, {$set: {'price': result[i].averageCost}}).exec();
-                        }
-                        console.log('updated');
-                        params.documentType == 2 ? finances = settings.createDocumentsToPay(params.documentAmount, accountNumber) : finances = settings.createDocumentsToReceive(params.documentAmount, accountNumber);
-                        Object.keys(finances).forEach(childElement => {
-                            console.log('Child element', childElement);
-                            let childParams = finances[childElement];
-                            cashflow.push({
-                                documentNumber: params.documentNumber,
-                                accountNumber: childParams.accountNumber,
-                                observations: [{'description': params.observations}],
-                                date: moment().toISOString(),
-                                creditAmount: childParams.creditAmount,
-                                debitAmount: childParams.debitAmount
-                            });
-                        });
-                        console.log(cashflow, 'cashflow');
-                        req.modelFactory.get('Cashflow').insertMany(cashflow, (err, result) => {
-                            if(err) {
-                                console.error(err);
-                                return next(err);
+                        ], (err, result) => {
+                            if (err) return next(err);
+                            console.log(result);
+                            for (let i = 0; i < Object.keys(result).length; i++) {
+                                console.log('update');
+                                Products.update({ _id: result[i]._id }, { $set: { 'price': result[i].averageCost } }).exec();
                             }
-                            res.send({'status': 1, 'id': documentId});
-                            req.onSend();
-                        });
-                        /*(async () => {
-                            for(let i = 0; i < Object.keys(result).length; i++) {
-                                await Products.update({_id: result[i]._id}, {$set: {'cost': result[i].averageCost}}).exec();
-                            }
+                            console.log('updated');
                             params.documentType == 2 ? finances = settings.createDocumentsToPay(params.documentAmount, accountNumber) : finances = settings.createDocumentsToReceive(params.documentAmount, accountNumber);
                             Object.keys(finances).forEach(childElement => {
                                 console.log('Child element', childElement);
@@ -197,24 +173,51 @@ exports.create = (req, res, next) => {
                                 cashflow.push({
                                     documentNumber: params.documentNumber,
                                     accountNumber: childParams.accountNumber,
-                                    observations: params.observations,
-                                    date: params.date,
+                                    observations: [{ 'description': params.observations }],
+                                    date: moment().toISOString(),
+                                    currency: params.currency,
                                     creditAmount: childParams.creditAmount,
                                     debitAmount: childParams.debitAmount
                                 });
                             });
+                            console.log(cashflow, 'cashflow');
                             req.modelFactory.get('Cashflow').insertMany(cashflow, (err, result) => {
-                                if(err) {
+                                if (err) {
                                     console.error(err);
                                     return next(err);
                                 }
-                                res.send({'status': 1, 'id': documentId});
+                                res.send({ 'status': 1, 'id': documentId });
                                 req.onSend();
                             });
-                        })();*/
-                    });
+                            /*(async () => {
+                                for(let i = 0; i < Object.keys(result).length; i++) {
+                                    await Products.update({_id: result[i]._id}, {$set: {'cost': result[i].averageCost}}).exec();
+                                }
+                                params.documentType == 2 ? finances = settings.createDocumentsToPay(params.documentAmount, accountNumber) : finances = settings.createDocumentsToReceive(params.documentAmount, accountNumber);
+                                Object.keys(finances).forEach(childElement => {
+                                    console.log('Child element', childElement);
+                                    let childParams = finances[childElement];
+                                    cashflow.push({
+                                        documentNumber: params.documentNumber,
+                                        accountNumber: childParams.accountNumber,
+                                        observations: params.observations,
+                                        date: params.date,
+                                        creditAmount: childParams.creditAmount,
+                                        debitAmount: childParams.debitAmount
+                                    });
+                                });
+                                req.modelFactory.get('Cashflow').insertMany(cashflow, (err, result) => {
+                                    if(err) {
+                                        console.error(err);
+                                        return next(err);
+                                    }
+                                    res.send({'status': 1, 'id': documentId});
+                                    req.onSend();
+                                });
+                            })();*/
+                        });
                 }, 200)
-                
+
             } else {
                 params.documentType == 2 ? finances = settings.createDocumentsToPay(params.documentAmount, accountNumber) : finances = settings.createDocumentsToReceive(params.documentAmount, accountNumber);
                 Object.keys(finances).forEach(childElement => {
@@ -223,19 +226,21 @@ exports.create = (req, res, next) => {
                     cashflow.push({
                         documentNumber: params.documentNumber,
                         accountNumber: childParams.accountNumber,
-                        observations: [{'description': params.observations}],
+                        observations: [{ 'description': params.observations }],
                         date: moment().toISOString(),
+                        currency: params.currency,
                         creditAmount: childParams.creditAmount,
                         debitAmount: childParams.debitAmount
+
                     });
                 });
                 req.modelFactory.get('Cashflow').insertMany(cashflow, (err, result) => {
-                    if(err) {
+                    if (err) {
                         console.error(err);
                         return next(err);
                     }
                     console.log(result);
-                    res.send({'status': 1, 'id': documentId});
+                    res.send({ 'status': 1, 'id': documentId });
                     req.onSend();
                 });
             }
@@ -249,8 +254,8 @@ exports.deletePurchases = (req, res, next) => {
     var Documents = req.modelFactory.get('Documents');
     var Stock = req.modelFactory.get('Stock');
     var cashflow = [];
-    Documents.find({'transactionId': transactionId}, (err, result) => {
-        if(Object.keys(result).length == 1) {
+    Documents.find({ 'transactionId': transactionId }, (err, result) => {
+        if (Object.keys(result).length == 1) {
             var documentAmount = result[0].documentAmount;
             finances = settings.counterpartDocumentsToPay(documentAmount, "113101");
             Object.keys(finances).forEach(childElement => {
@@ -265,26 +270,26 @@ exports.deletePurchases = (req, res, next) => {
                 });
             });
             req.modelFactory.get('Cashflow').insertMany(cashflow, (err, result) => {
-                if(err) {
+                if (err) {
                     console.error(err);
                     return next(err);
                 }
-                Stock.deleteMany({'transactionId' : transactionId }, (err, result) => {
-                    Documents.update({'transactionId': transactionId}, {$set: {'status': 1}}, (err, result) => {
-                        if(err) {
+                Stock.deleteMany({ 'transactionId': transactionId }, (err, result) => {
+                    Documents.update({ 'transactionId': transactionId }, { $set: { 'status': 1 } }, (err, result) => {
+                        if (err) {
                             console.error(err);
                             return next(err);
                         }
-                        res.send({'status': 1});
+                        res.send({ 'status': 1 });
                         req.onSend();
                     });
                 });
             });
         } else {
-            res.send({'status': 0, 'message': "This document doesn't exist"});
+            res.send({ 'status': 0, 'message': "This document doesn't exist" });
             req.onSend();
         }
-        
+
     });
 }
 
@@ -294,23 +299,25 @@ exports.customers = (req, res, next) => {
     limit = parseInt(queries.limit, 10);
     var Documents = req.modelFactory.get('Documents');
     var aggregate = Documents.aggregate([
-        {"$match": {"businessPartnerId": {$ne: null}}},
-        {"$match": {"documentType": 2}},
-        {"$lookup": {"from": "Users", "localField": "_id", "foreignField": "businessPartnerId", "as": "users_docs"}},
-        {"$group": {
-            "_id": "businessPartnerId",
-            "name": {"$first": "$users_docs.name"},
-            "total": {"$sum": 1}
-        }}
+        { "$match": { "businessPartnerId": { $ne: null } } },
+        { "$match": { "documentType": 2 } },
+        { "$lookup": { "from": "Users", "localField": "_id", "foreignField": "businessPartnerId", "as": "users_docs" } },
+        {
+            "$group": {
+                "_id": "businessPartnerId",
+                "name": { "$first": "$users_docs.name" },
+                "total": { "$sum": 1 }
+            }
+        }
     ]);
 
-    Documents.aggregatePaginate(aggregate, {page: page, limit: limit}, (err, result, pageCount, count) => {
-        if(err) {
+    Documents.aggregatePaginate(aggregate, { page: page, limit: limit }, (err, result, pageCount, count) => {
+        if (err) {
             console.error(err);
             return next(err);
         }
         // Response with JSON in this standard format
-        res.json({"docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount});
+        res.json({ "docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount });
         // Close the connection
         req.onSend();
     });
@@ -319,7 +326,7 @@ exports.customers = (req, res, next) => {
 exports.purchases = (req, res, next) => {
     var queries = req.query;
     page = queries.page || 1
-    if(!queries.limit) {
+    if (!queries.limit) {
         limit = 10;
     } else {
         limit = parseInt(queries.limit, 10);
@@ -332,61 +339,67 @@ exports.purchases = (req, res, next) => {
     limit = parseInt(queries.limit, 10);
     var Documents = req.modelFactory.get('Documents');
 
-    var provider = {"$match": {}};
-    if(typeof documentId != 'undefined' && documentId != "null") {
-        provider["$match"] = {"documentId": documentId};
+    var provider = { "$match": {} };
+    if (typeof documentId != 'undefined' && documentId != "null") {
+        provider["$match"] = { "documentId": documentId };
     }
-    var document = {"$match": {}};
-    if(typeof documentNumber != 'undefined' && documentNumber != "null") {
-        document["$match"] = {"documentNumber": {"$regex": ".*" + documentNumber + ".*"}}; 
+    var document = { "$match": {} };
+    if (typeof documentNumber != 'undefined' && documentNumber != "null") {
+        document["$match"] = { "documentNumber": { "$regex": ".*" + documentNumber + ".*" } };
     }
-    var date = {"$match": {}};
-    if(typeof(startDate && endDate) != 'undefined') {
-        date["$match"] = {"emissionDate": {$gte: new Date(startDate), $lte: new Date(endDate)}};
+    var date = { "$match": {} };
+    if (typeof (startDate && endDate) != 'undefined') {
+        date["$match"] = { "emissionDate": { $gte: new Date(startDate), $lte: new Date(endDate) } };
     }
     Documents.aggregate([
-        {"$sort": {"date": -1}},
-        {"$match": {"products": {$ne: []}}},
-        {"$match": {"documentType": 2}},
+        { "$sort": { "date": -1 } },
+        { "$match": { "products": { $ne: [] } } },
+        { "$match": { "documentType": 2 } },
         date,
         document,
-        {"$lookup": {"from": "Contacts", "localField": "businessPartnerId", "foreignField": "_id", "as": "business_docs"}},
-        {"$project": {
+        { "$lookup": { "from": "Contacts", "localField": "businessPartnerId", "foreignField": "_id", "as": "business_docs" } },
+        {
+            "$project": {
                 "documentNumber": 1,
-        		"documentAmount": 1,
-        		"name": {"$arrayElemAt": ["$business_docs.name", 0]},
-        		"documentId": {"$arrayElemAt": ["$business_docs.documentId", 0]},
+                "documentAmount": 1,
+                "name": { "$arrayElemAt": ["$business_docs.name", 0] },
+                "documentId": { "$arrayElemAt": ["$business_docs.documentId", 0] },
                 "emissionDate": 1,
                 "transactionId": 1,
-        		"date": 1,
+                "date": 1,
                 "status": 1,
                 "createdAt": 1
-        }},
+            }
+        },
         provider,
-        {"$sort": {"createdAt": -1}},
+        { "$sort": { "createdAt": -1 } },
         {
             $facet: {
                 total: [
                     { $group: { _id: null, count: { $sum: 1 } } },
                 ],
                 docs: [
-                    { $skip: skip},
-                    { $limit: limit}
+                    { $skip: skip },
+                    { $limit: limit }
                 ]
             }
         },
-        {"$project": {
-            "total": {$arrayElemAt: ["$total.count", 0]},
-            "docs": 1
-        }},
-        {"$project": {
-            "total": 1,
-            "pages": {"$ceil": {"$divide": ["$total", limit]}},
-            "docs": 1,
-            "page": page
-        }},
+        {
+            "$project": {
+                "total": { $arrayElemAt: ["$total.count", 0] },
+                "docs": 1
+            }
+        },
+        {
+            "$project": {
+                "total": 1,
+                "pages": { "$ceil": { "$divide": ["$total", limit] } },
+                "docs": 1,
+                "page": page
+            }
+        },
     ], (err, result) => {
-        if(err) {
+        if (err) {
             req.onSend();
             return next(err);
         }
@@ -406,7 +419,7 @@ exports.pay = (req, res, next) => {
             "discountAmount": 0
             "accountNumber": "221101"
         }
-    */ 
+    */
     (async () => {
         var params = req.body;
         var payAmount = params.payAmount;
@@ -420,7 +433,7 @@ exports.pay = (req, res, next) => {
         var documentConfig;
         var cashflow = [];
 
-        if(typeof documentType == 'undefined') {
+        if (typeof documentType == 'undefined') {
             res.send({
                 "status": 0,
                 "msg": "Query parameter documentType is not defined"
@@ -428,36 +441,38 @@ exports.pay = (req, res, next) => {
             req.onSend();
         }
 
-    
+
         var results = await Documents.aggregate([
-            {"$unwind": "$invoices"},
-            {"$match": {"invoices.id": invoiceId}},
-            {"$project": {
-                "_id": 1,
-                "invoiceId": "$invoices.id",
-                "documentNumber": 1,
-                "status": "$invoices.status",
-                "invoiceAmount": "$invoices.amount"
-            }}
+            { "$unwind": "$invoices" },
+            { "$match": { "invoices.id": invoiceId } },
+            {
+                "$project": {
+                    "_id": 1,
+                    "invoiceId": "$invoices.id",
+                    "documentNumber": 1,
+                    "status": "$invoices.status",
+                    "invoiceAmount": "$invoices.amount"
+                }
+            }
         ]).exec();
 
-        if(Object.keys(results).length == 0 || typeof results == 'undefined') {
+        if (Object.keys(results).length == 0 || typeof results == 'undefined') {
             res.send({
                 "status": 0,
                 "msg": "Document not found"
             })
         }
 
-        if(results[0].status == 1) {
+        if (results[0].status == 1) {
             res.send({
                 "status": 0,
                 "msg": "A payment has already been made some time ago for this invoice"
             })
-        } 
+        }
 
         invoiceAmount = results[0].invoiceAmount;
 
-        if(payAmount > invoiceAmount) {
+        if (payAmount > invoiceAmount) {
             res.send({
                 "status": 0,
                 "msg": "payAmount is more than the invoiceAmount"
@@ -468,7 +483,7 @@ exports.pay = (req, res, next) => {
         documentId = results[0]._id;
         documentNumber = (typeof results.documentNumber == 'undefined') ? "" : results.documentNumber;
         (documentType == 2) ? documentConfig = settings.payDocumentsToPay(payAmount, accountNumber) : documentConfig = settings.payDocumentsToReceive(payAmount, accountNumber);
-        
+
         console.log(documentConfig, 'document');
 
         Object.keys(documentConfig).forEach(childElement => {
@@ -476,16 +491,17 @@ exports.pay = (req, res, next) => {
             cashflow.push({
                 documentNumber: documentNumber,
                 accountNumber: childParams.accountNumber,
-                observations: [{"description": observations}],
+                observations: [{ "description": observations }],
                 creditAmount: childParams.creditAmount,
                 debitAmount: childParams.debitAmount,
+                currency: params.currency,
                 date: moment().toISOString(true)
             });
         });
         var observationString;
-        if(params.increaseAmount > 0 | params.discountAmount> 0) {
-            if(documentType == 2) {
-                if(params.increaseAmount > 0) {
+        if (params.increaseAmount > 0 | params.discountAmount > 0) {
+            if (documentType == 2) {
+                if (params.increaseAmount > 0) {
                     finances = settings.toPayIncrementSettings(params.increaseAmount, accountNumber);
                     observationString = "Juro ";
                 } else {
@@ -493,7 +509,7 @@ exports.pay = (req, res, next) => {
                     observationString = "Desconto ";
                 }
             } else {
-                if(params.increaseAmount > 0) {
+                if (params.increaseAmount > 0) {
                     finances = settings.toReceiveIncrementSettings(params.increaseAmount, accountNumber);
                     observationString = "Juro a Receber ";
                 }
@@ -502,22 +518,23 @@ exports.pay = (req, res, next) => {
                     observationString = "Desconto a Receber ";
                 }
             }
-            
+
             Object.keys(finances).forEach(childElement => {
                 let childParams = finances[childElement];
                 cashflow.push({
                     documentNumber: documentNumber,
                     accountNumber: childParams.accountNumber,
-                    observations: [{"description": observationString+" Documento: "+ documentNumber}],
+                    observations: [{ "description": observationString + " Documento: " + documentNumber }],
                     debitAmount: childParams.debitAmount,
                     creditAmount: childParams.creditAmount,
+                    currency: params.currency,
                     date: moment().toISOString(true)
                 });
             });
         }
 
         Cashflow.insertMany(cashflow, (err, result) => {
-            if(err) {
+            if (err) {
                 console.error(err);
                 return next(err);
             }
@@ -530,23 +547,23 @@ exports.pay = (req, res, next) => {
                 }
             }, (err, result) => {
                 (async () => {
-                    var count = await Documents.countDocuments({"_id": mongoose.Types.ObjectId(documentId), "invoices.status": 0}).exec();
+                    var count = await Documents.countDocuments({ "_id": mongoose.Types.ObjectId(documentId), "invoices.status": 0 }).exec();
                     console.log(count, 'count');
-                    if(count == 0) {
-                        Documents.update({"_id": mongoose.Types.ObjectId(documentId)}, {$set: {"status": 1}}, (err, result) => {
-                            if(err) {
+                    if (count == 0) {
+                        Documents.update({ "_id": mongoose.Types.ObjectId(documentId) }, { $set: { "status": 1 } }, (err, result) => {
+                            if (err) {
                                 console.error(err);
                                 return next(err);
                             }
-                            res.send({'status': 1});
+                            res.send({ 'status': 1 });
                             req.onSend();
                         });
                     } else {
-                        res.send({'status': 1});
+                        res.send({ 'status': 1 });
                         req.onSend();
                     }
                 })();
-                
+
             });
         });
     })();
@@ -686,7 +703,7 @@ exports.payAndSplit = async (req, res, next) => {
         var documentNumber;
         var cashflow = [];
 
-        if(typeof documentType == 'undefined') {
+        if (typeof documentType == 'undefined') {
             res.send({
                 "status": 0,
                 "msg": "Query parameter documentType is not defined"
@@ -694,20 +711,22 @@ exports.payAndSplit = async (req, res, next) => {
             req.onSend();
         }
 
-    
+
         var results = await Documents.aggregate([
-            {"$unwind": "$invoices"},
-            {"$match": {"invoices.id": invoiceId}},
-            {"$project": {
-                "_id": 1,
-                "invoiceId": "$invoices.id",
-                "documentNumber": 1,
-                "status": "$invoices.status",
-                "invoiceAmount": "$invoices.amount"
-            }}
+            { "$unwind": "$invoices" },
+            { "$match": { "invoices.id": invoiceId } },
+            {
+                "$project": {
+                    "_id": 1,
+                    "invoiceId": "$invoices.id",
+                    "documentNumber": 1,
+                    "status": "$invoices.status",
+                    "invoiceAmount": "$invoices.amount"
+                }
+            }
         ]).exec();
 
-        if(typeof results == 'undefined') {
+        if (typeof results == 'undefined') {
             res.send({
                 "status": 0,
                 "msg": "Document not found"
@@ -715,25 +734,25 @@ exports.payAndSplit = async (req, res, next) => {
             req.onSend();
         }
 
-        if(results[0].status == 1) {
+        if (results[0].status == 1) {
             res.send({
                 "status": 0,
                 "msg": "A payment has already been made some time ago for this invoice"
             })
-        } 
+        }
 
 
         invoiceAmount = results[0].invoiceAmount;
         documentId = results[0]._id;
         documentNumber = (typeof results.documentNumber == 'undefined') ? "" : results.documentNumber;
-        
-        if(payAmount > invoiceAmount) {
+
+        if (payAmount > invoiceAmount) {
             res.send({
                 "status": 0,
                 "msg": "payAmount is more than the invoiceAmount"
             });
             req.onSend();
-        } else if(payAmount == invoiceAmount) {
+        } else if (payAmount == invoiceAmount) {
             var cashflow = [];
             Documents.updateOne({
                 "invoices.id": invoiceId
@@ -756,32 +775,32 @@ exports.payAndSplit = async (req, res, next) => {
                         date: moment().toISOString(true)
                     });
                 });
-                
+
                 Cashflow.insertMany(cashflow, (err, result) => {
-                    if(err) {
+                    if (err) {
                         console.error(err);
                         return next(err);
                     }
                     (async () => {
-                        var count = await Documents.countDocuments({"_id": mongoose.Types.ObjectId(documentId), "invoices.status": 0}).exec();
+                        var count = await Documents.countDocuments({ "_id": mongoose.Types.ObjectId(documentId), "invoices.status": 0 }).exec();
                         console.log(count, 'count');
-                        if(count == 0) {
-                            Documents.update({"_id": mongoose.Types.ObjectId(documentId)}, {$set: {"status": 1}}, (err, result) => {
-                                if(err) {
+                        if (count == 0) {
+                            Documents.update({ "_id": mongoose.Types.ObjectId(documentId) }, { $set: { "status": 1 } }, (err, result) => {
+                                if (err) {
                                     console.error(err);
                                     return next(err);
                                 }
-                                res.send({'status': 1});
+                                res.send({ 'status': 1 });
                                 req.onSend();
                             });
                         } else {
-                            res.send({'status': 1});
+                            res.send({ 'status': 1 });
                             req.onSend();
                         }
                     })();
                 });
             }
-        } else if(payAmount < invoiceAmount) {
+        } else if (payAmount < invoiceAmount) {
             var cashflow = [];
             partialAmount = 0;
             partialAmount = (invoiceAmount - payAmount);
@@ -789,36 +808,39 @@ exports.payAndSplit = async (req, res, next) => {
             Documents.updateOne({
                 "invoices.id": invoiceId
             },
-            {
-            $set: {
-                "invoices.$.amount": payAmount,
-                "invoices.$.payDate": moment().toISOString(true),
-                "invoices.$.status": 1
-            }}, (err, result) => {
-                if(err) {
-                    console.error(err);
-                    return next(err);
-                }
-            });
+                {
+                    $set: {
+                        "invoices.$.amount": payAmount,
+                        "invoices.$.payDate": moment().toISOString(true),
+                        "invoices.$.status": 1
+                    }
+                }, (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        return next(err);
+                    }
+                });
             Documents.updateOne({
                 "invoices.id": invoiceId
             }, {
-                $push: {"invoices": {
-                    "id": newInvoiceId,
-                    "observations": observations,
-                    "documentNumber": documentNumber,
-                    "amount": partialAmount,
-                    "expirationDate": params.expirationDate,
-                    "status": 0,
-                    "date": moment().toISOString(true),
-                }}
+                $push: {
+                    "invoices": {
+                        "id": newInvoiceId,
+                        "observations": observations,
+                        "documentNumber": documentNumber,
+                        "amount": partialAmount,
+                        "expirationDate": params.expirationDate,
+                        "status": 0,
+                        "date": moment().toISOString(true),
+                    }
+                }
             }, (err, result) => {
-                if(err) {
+                if (err) {
                     console.error(err);
                     return next(err);
                 }
             });
-            if (typeof documentType  != 'undefined') {
+            if (typeof documentType != 'undefined') {
                 documentType == 2 ? finances = settings.providerSplittedPaySettings(payAmount, accountNumber) : finances = settings.customerSplittedPaySettings(payAmount, accountNumber);
                 Object.keys(finances).forEach(childElement => {
                     let childParams = finances[childElement];
@@ -828,22 +850,23 @@ exports.payAndSplit = async (req, res, next) => {
                         observations: childParams.observations,
                         debitAmount: childParams.debitAmount,
                         creditAmount: childParams.creditAmount,
+                        currency: params.currency,
                         date: moment().toISOString(true)
                     });
                 });
                 Cashflow.insertMany(cashflow, (err, result) => {
-                    if(err) {
+                    if (err) {
                         console.error(err);
                         return next(err);
                     }
-                    res.send({'status': 1});
+                    res.send({ 'status': 1 });
                     req.onSend();
                 });
             }
         }
     })();
 }
-    
+
 /*exports.payAndSplit = (req, res, next) => {
 
     var params = req.body;
@@ -986,7 +1009,7 @@ exports.businessResume = (req, res, next) => {
     var businessPartnerId = req.params.businessPartnerId;
     documentType = parseInt(queries.documentType, 10);
     var documentTypeName, businessPartnerName;
-    if(documentType == 2) {
+    if (documentType == 2) {
         documentTypeName = 'Contas a Pagar';
         businessPartnerName = 'Fornecedor';
     } else {
@@ -995,29 +1018,33 @@ exports.businessResume = (req, res, next) => {
     }
     var Documents = req.modelFactory.get('Documents');
     Documents.aggregate([
-        {"$match": {"documentType": documentType}},
+        { "$match": { "documentType": documentType } },
         //{"$match": {"status": filterStatus}},
-        {"$match": {"date": {$gte: new Date(startDate), $lt: new Date(endDate)}}},
-        {"$match": {"businessPartnerId": mongoose.Types.ObjectId(businessPartnerId)}},
-        {"$lookup": {"from": "Contacts", "localField": "businessPartnerId", "foreignField": "_id", "as": "business_docs"}},
-        {"$unwind": "$invoices"},
-        {"$project": {
-            "documentNumber": 1,
-            "date": 1,
-            "documentId": {"$arrayElemAt": ["$business_docs._id", 0]},
-            "name": {"$arrayElemAt": ["$business_docs.name", 0]},
-            "expirationDate": "$invoices.expirationDate",
-            "documentAmount": "$invoices.amount",
-            "payDate": "$invoices.payDate"
-        }},
-        {"$group": {
-            "_id": "$businessPartnerId",
-            "name": {"$first": "$name"},
-            "documentTotal": {"$sum": "$documentAmount"},
-            "bills_docs": {"$push": {"documentNumber": "$documentNumber", "date": "$date", "expirationDate": "$expirationDate", "payDate": "$payDate", "documentAmount": "$documentAmount"}}
-        }}
+        { "$match": { "date": { $gte: new Date(startDate), $lt: new Date(endDate) } } },
+        { "$match": { "businessPartnerId": mongoose.Types.ObjectId(businessPartnerId) } },
+        { "$lookup": { "from": "Contacts", "localField": "businessPartnerId", "foreignField": "_id", "as": "business_docs" } },
+        { "$unwind": "$invoices" },
+        {
+            "$project": {
+                "documentNumber": 1,
+                "date": 1,
+                "documentId": { "$arrayElemAt": ["$business_docs._id", 0] },
+                "name": { "$arrayElemAt": ["$business_docs.name", 0] },
+                "expirationDate": "$invoices.expirationDate",
+                "documentAmount": "$invoices.amount",
+                "payDate": "$invoices.payDate"
+            }
+        },
+        {
+            "$group": {
+                "_id": "$businessPartnerId",
+                "name": { "$first": "$name" },
+                "documentTotal": { "$sum": "$documentAmount" },
+                "bills_docs": { "$push": { "documentNumber": "$documentNumber", "date": "$date", "expirationDate": "$expirationDate", "payDate": "$payDate", "documentAmount": "$documentAmount" } }
+            }
+        }
     ], (err, result) => {
-        if(err) {
+        if (err) {
             console.error(err);
             return next(err);
         }
@@ -1046,22 +1073,22 @@ exports.businessResume = (req, res, next) => {
                 </thead>
             <tbody>
             <tr></tr>`;
-            var count = Object.keys(result).length;
-            var total = 0;
-            var i = 0;
-            var iterate = new Promise(function(resolve, reject){
-                result.forEach(element => {
-                    total += element.documentTotal;
-                    html += `
+        var count = Object.keys(result).length;
+        var total = 0;
+        var i = 0;
+        var iterate = new Promise(function (resolve, reject) {
+            result.forEach(element => {
+                total += element.documentTotal;
+                html += `
                     <tr>
                         <td width="200" colspan="3"><i><span style="font-size: 20px; font-weight: bolder; margin-bottom: 15px;">${element.name}</span></i></td>
                     </tr>`;
-                    element.bills_docs.forEach(childElement => {
-           
-                        expirationDate = typeof childElement.expirationDate != 'undefined' ? moment(childElement.expirationDate).format("DD/MM/YYYY") : '';
-                        payDate = typeof childElement.payDate != 'undefined' ? moment(childElement.payDate).format("DD/MM/YYYY") : '';
-                        date = typeof childElement.date != 'undefined' ? moment(childElement.date).format("DD/MM/YYYY") : '';
-                        html += `
+                element.bills_docs.forEach(childElement => {
+
+                    expirationDate = typeof childElement.expirationDate != 'undefined' ? moment(childElement.expirationDate).format("DD/MM/YYYY") : '';
+                    payDate = typeof childElement.payDate != 'undefined' ? moment(childElement.payDate).format("DD/MM/YYYY") : '';
+                    date = typeof childElement.date != 'undefined' ? moment(childElement.date).format("DD/MM/YYYY") : '';
+                    html += `
                         <tr>
                             <td width="200" style="font-size: 13px; font-family: Arial">${childElement.documentNumber}</td>
                             <td width="90" style="font-size: 13px; font-family: Arial">${date}</td>
@@ -1070,42 +1097,42 @@ exports.businessResume = (req, res, next) => {
                             <td width="100" align="right" style="font-size: 13px; font-family: Arial">${payDate}</td>
                             <td width="120" align="right" style="font-size: 13px; font-family: Arial">${numeral(childElement.documentAmount).format('0,0.00')}</td>
                         </tr>`;
-                    });
-                    html += `
+                });
+                html += `
                     <tr>
                         <td width="120" colspan="6" align="right"  style="border: 1px solid black; border-width: 0px 0px 1px 0px;"><i><b>${numeral(element.documentTotal).format('0,0.00')}</b></i></td>
                     </tr>`;
-                    i++;
-                });         
-                html += `
+                i++;
+            });
+            html += `
                 <tr>
                     <td width="120" colspan="6" align="right"  style="border: 1px solid black; border-width: 0px 0px 1px 0px;"><i><b>Total: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${numeral(total).format('0,0.00')}</b></i></td>
                 </tr>
                 </table>`;
-                if(count == i) {
-                    resolve(i);
-                }
-            });
-            iterate.then((result) => {
-                console.log(result);
-                var options = {
-                    "html": html,
-                    "paperSize": {format: 'Legal', orientation: 'portrait', border: '0.3in'}
-                }
+            if (count == i) {
+                resolve(i);
+            }
+        });
+        iterate.then((result) => {
+            console.log(result);
+            var options = {
+                "html": html,
+                "paperSize": { format: 'Legal', orientation: 'portrait', border: '0.3in' }
+            }
 
-                var startDate = moment(req.query.startDate).format('DD-MM-YYYY');
-                var endDate = moment(req.query.endDate).format('DD-MM-YYYY');
+            var startDate = moment(req.query.startDate).format('DD-MM-YYYY');
+            var endDate = moment(req.query.endDate).format('DD-MM-YYYY');
 
-                pdf.convert(options, function(err, result) {
-                    var tmpPath = result.getTmpPath();
-                    console.log(tmpPath);
-                    S3Manager.uploadFromFile(tmpPath, 'pdf/documents-'+startDate+'-ao-'+endDate+'-', function(err, data){ 
-                        console.log(data, 'response');
-                        res.send(data);
-                        req.onSend();
-                    });
+            pdf.convert(options, function (err, result) {
+                var tmpPath = result.getTmpPath();
+                console.log(tmpPath);
+                S3Manager.uploadFromFile(tmpPath, 'pdf/documents-' + startDate + '-ao-' + endDate + '-', function (err, data) {
+                    console.log(data, 'response');
+                    res.send(data);
+                    req.onSend();
                 });
             });
+        });
     });
 }
 
@@ -1116,7 +1143,7 @@ exports.reports = (req, res, next) => {
     //var status = queries.status;
     documentType = parseInt(queries.documentType, 10);
     var documentTypeName;
-    if(documentType == 2) {
+    if (documentType == 2) {
         documentTypeName = 'Contas a Pagar';
     } else {
         documentTypeName = 'Contas a Receber';
@@ -1125,33 +1152,37 @@ exports.reports = (req, res, next) => {
     var filterType = queries.filterType;
     var filterStatus = parseInt(queries.filterStatus, 10);
     var Documents = req.modelFactory.get('Documents');
-    if(typeof documentType == 'undefined' || typeof filterStatus == 'undefined' || typeof filterType == 'undefined') {
+    if (typeof documentType == 'undefined' || typeof filterStatus == 'undefined' || typeof filterType == 'undefined') {
         return next(new Error('Parametros faltantes para filtrar'));
     } else {
         Documents.aggregate([
-            {"$match": {"documentType": documentType}},
-            {"$match": {"date": {$gte: new Date(startDate), $lt: new Date(endDate)}}},
-            {"$lookup": {"from": "Contacts", "localField": "businessPartnerId", "foreignField": "_id", "as": "business_docs"}},
+            { "$match": { "documentType": documentType } },
+            { "$match": { "date": { $gte: new Date(startDate), $lt: new Date(endDate) } } },
+            { "$lookup": { "from": "Contacts", "localField": "businessPartnerId", "foreignField": "_id", "as": "business_docs" } },
             //{"$match": {"business_docs.isCustomer": true}},
-            {"$unwind": "$invoices"},
-            {"$match": {"status": filterStatus}},
-            {"$project": {
-                "documentNumber": 1,
-                "date": 1,
-                "businessPartnerId": {"$arrayElemAt": ["$business_docs._id", 0]},
-                "businessName": {"$arrayElemAt": ["$business_docs.name", 0]},
-                "expirationDate": "$invoices.expirationDate",
-                "documentAmount": "$invoices.amount",
-                "payDate": "$invoices.payDate"
-            }},
-            {"$group": {
-                "_id": "$businessPartnerId",
-                "businessName": {"$first": "$businessName"},
-                "documentTotal": {"$sum": "$documentAmount"},
-                "bills_docs": {"$push": {"documentNumber": "$documentNumber", "date": "$date", "expirationDate": "$expirationDate", "payDate": "$payDate", "documentAmount": "$documentAmount"}}
-            }}
+            { "$unwind": "$invoices" },
+            { "$match": { "status": filterStatus } },
+            {
+                "$project": {
+                    "documentNumber": 1,
+                    "date": 1,
+                    "businessPartnerId": { "$arrayElemAt": ["$business_docs._id", 0] },
+                    "businessName": { "$arrayElemAt": ["$business_docs.name", 0] },
+                    "expirationDate": "$invoices.expirationDate",
+                    "documentAmount": "$invoices.amount",
+                    "payDate": "$invoices.payDate"
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$businessPartnerId",
+                    "businessName": { "$first": "$businessName" },
+                    "documentTotal": { "$sum": "$documentAmount" },
+                    "bills_docs": { "$push": { "documentNumber": "$documentNumber", "date": "$date", "expirationDate": "$expirationDate", "payDate": "$payDate", "documentAmount": "$documentAmount" } }
+                }
+            }
         ], (err, result) => {
-            if(err) {
+            if (err) {
                 console.error(err);
                 return next(err);
             }
@@ -1180,19 +1211,19 @@ exports.reports = (req, res, next) => {
                 </thead>
             <tbody>
             <tr></tr>`;
-            if(filterType == 'businesspartner') {
-                function compare(a,b) {
+            if (filterType == 'businesspartner') {
+                function compare(a, b) {
                     if (a.businessName < b.businessName)
-                      return -1;
+                        return -1;
                     if (a.businessName > b.businessName)
-                      return 1;
+                        return 1;
                     return 0;
                 }
                 total = 0;
                 var sorted = result.sort(compare);
                 var count = Object.keys(result).length;
                 var i = 0;
-                var iterate = new Promise(function(resolve, reject){
+                var iterate = new Promise(function (resolve, reject) {
                     sorted.forEach(element => {
                         total += element.documentTotal;
                         html += `
@@ -1219,25 +1250,25 @@ exports.reports = (req, res, next) => {
                             <td width="120" colspan="6" align="right"  style="border: 1px solid black; border-width: 0px 0px 1px 0px;"><i><b>${numeral(element.documentTotal).format('0,0.00')}</b></i></td>
                         </tr>`;
                         i++;
-                    });         
+                    });
                     html += `
                     <tr>
                         <td width="120" colspan="6" align="right"  style="border: 1px solid black; border-width: 0px 0px 1px 0px;"><i><b>Total: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${numeral(total).format('0,0.00')}</b></i></td>
                     </tr>
                     </table>`;
-                    if(count == i) {
+                    if (count == i) {
                         resolve(i);
                     }
                 });
-            } else if(filterType == 'expiration') {     
-                console.log('Llego a filterType');             
+            } else if (filterType == 'expiration') {
+                console.log('Llego a filterType');
                 var sorted;
                 var total = 0;
                 var count = Object.keys(result).length;
                 var i = 0;
-                var iterate = new Promise(function(resolve, reject){
+                var iterate = new Promise(function (resolve, reject) {
                     result.forEach(element => {
-                        sorted = element.bills_docs.sort(function(a,b){
+                        sorted = element.bills_docs.sort(function (a, b) {
                             return new Date(a.expirationDate) - new Date(b.expirationDate)
                         });
                         total += element.documentTotal;
@@ -1261,8 +1292,8 @@ exports.reports = (req, res, next) => {
                     <tr>
                         <td width="120" colspan="6" align="right"  style="border: 1px solid black; border-width: 0px 0px 1px 0px;"><i><b>Total: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${numeral(total).format('0,0.00')}</b></i></td>
                     </tr>
-                    </table>`; 
-                    if(count == i) {
+                    </table>`;
+                    if (count == i) {
                         resolve(i);
                     }
                 });
@@ -1272,16 +1303,16 @@ exports.reports = (req, res, next) => {
                 res.setHeader('Content-Type', 'application/pdf')
                 var options = {
                     "html": html,
-                    "paperSize": {format: 'Legal', orientation: 'portrait', border: '0.3in', header: {contents: "<h1>test</h1>"}}
+                    "paperSize": { format: 'Legal', orientation: 'portrait', border: '0.3in', header: { contents: "<h1>test</h1>" } }
                 }
 
                 var startDate = moment(req.query.startDate).format('DD-MM-YYYY');
                 var endDate = moment(req.query.endDate).format('DD-MM-YYYY');
 
-                pdf.convert(options, function(err, result) {
+                pdf.convert(options, function (err, result) {
                     var tmpPath = result.getTmpPath();
                     console.log(tmpPath);
-                    S3Manager.uploadFromFile(tmpPath, 'pdf/documents-'+startDate+'-ao-'+endDate+'-', function(err, data){ 
+                    S3Manager.uploadFromFile(tmpPath, 'pdf/documents-' + startDate + '-ao-' + endDate + '-', function (err, data) {
                         console.log(data, 'response');
                         res.send(data);
                         req.onSend();
@@ -1292,48 +1323,52 @@ exports.reports = (req, res, next) => {
     }
 }
 
-exports.details = (req, res, next) => { 
+exports.details = (req, res, next) => {
     var documentId = req.params.documentId;
     var Documents = req.modelFactory.get('Documents');
     var aggregate = Documents.aggregate([
-        {"$match": {"_id": mongoose.Types.ObjectId(documentId)}},
-        {"$unwind": "$products"},
-        {"$lookup": {"from": "Products", "localField": "products.productId", "foreignField": "_id", "as": "products_docs"}},
-        {"$project": {
-            "_id": 1,
-            "status": 1,
-            "businessPartnerId": 1,
-            "documentAmount": 1,
-            "invoices": 1,
-            "products": {"productId": "$products.productId", "productName": {"$arrayElemAt": ["$products_docs.name",0]}, "measure": "$products.measure", "unitPrice": "$products.unitPrice", "subtotalPrice": "$products.subtotalPrice", "stockGroupId": "$products.stockGroupId", "transactionId": "$products.transactionId", "date": "$products.date"},
-            "documentType": 1,
-            "observations": 1,
-            "transactionId": 1,
-            "date": 1,
-            "emissionDate": 1,
-            "accountNumber": 1,
-            "createdAt": 1,
-            "updatedAt": 1
-        }},
-        {"$group": {
-            "_id": 1,
-            "status": {"$first": "$status"},
-            "businessPartnerId": {"$first": "$businessPartnerId"},
-            "documentAmount": {"$first": "$documentAmount"},
-            "invoices": {"$first": "$invoices"},
-            "products": {"$push": "$products"},
-            "documentType": {"$first": "$documentType"},
-            "observations": {"$first": "observations"},
-            "transactionId": {"$first": "$transactionId"},
-            "date": {"$first": "$date"},
-            "emissionDate": {"$first": "$emissionDate"},
-            "accountNumber": {"$first": "$accountNumber"},
-            "createdAt": {"$first": "$createdAt"},
-            "updatedAt": {"$first": "$updatedAt"}
-        }}], (err, result) => {
-        if(err) return console.log(err);
-        res.send(result);
-    });
+        { "$match": { "_id": mongoose.Types.ObjectId(documentId) } },
+        { "$unwind": "$products" },
+        { "$lookup": { "from": "Products", "localField": "products.productId", "foreignField": "_id", "as": "products_docs" } },
+        {
+            "$project": {
+                "_id": 1,
+                "status": 1,
+                "businessPartnerId": 1,
+                "documentAmount": 1,
+                "invoices": 1,
+                "products": { "productId": "$products.productId", "productName": { "$arrayElemAt": ["$products_docs.name", 0] }, "measure": "$products.measure", "unitPrice": "$products.unitPrice", "subtotalPrice": "$products.subtotalPrice", "stockGroupId": "$products.stockGroupId", "transactionId": "$products.transactionId", "date": "$products.date" },
+                "documentType": 1,
+                "observations": 1,
+                "transactionId": 1,
+                "date": 1,
+                "emissionDate": 1,
+                "accountNumber": 1,
+                "createdAt": 1,
+                "updatedAt": 1
+            }
+        },
+        {
+            "$group": {
+                "_id": 1,
+                "status": { "$first": "$status" },
+                "businessPartnerId": { "$first": "$businessPartnerId" },
+                "documentAmount": { "$first": "$documentAmount" },
+                "invoices": { "$first": "$invoices" },
+                "products": { "$push": "$products" },
+                "documentType": { "$first": "$documentType" },
+                "observations": { "$first": "observations" },
+                "transactionId": { "$first": "$transactionId" },
+                "date": { "$first": "$date" },
+                "emissionDate": { "$first": "$emissionDate" },
+                "accountNumber": { "$first": "$accountNumber" },
+                "createdAt": { "$first": "$createdAt" },
+                "updatedAt": { "$first": "$updatedAt" }
+            }
+        }], (err, result) => {
+            if (err) return console.log(err);
+            res.send(result);
+        });
     /*
     Documents.aggregatePaginate(aggregate, {page: page, limit: limit}, (err, result, pageCount, count) => {
         if(err) {
@@ -1348,7 +1383,7 @@ exports.details = (req, res, next) => {
 
 }
 
-exports.show = (req, res, next) => { 
+exports.show = (req, res, next) => {
     var documentType = parseInt(req.params.documentType, 10);
     var businessPartnerId = req.params.businessPartnerId;
     var queries = req.query;
@@ -1357,36 +1392,38 @@ exports.show = (req, res, next) => {
     limit = parseInt(queries.limit, 10);
     var Documents = req.modelFactory.get('Documents');
     var aggregate = Documents.aggregate([
-        {"$match": {"businessPartnerId": mongoose.Types.ObjectId(businessPartnerId)}},
-        {"$match": {"documentType": documentType}},
-        {"$sort": {"date": -1}},
-        {"$unwind": "$invoices"},
-        {"$match": {"invoices.status": status}},
-        {"$project": {
-            "_id": 0,
-        	"businessPartnerId": 1,
-        	"documentNumber": "$invoices.documentNumber",
-        	"date": "$invoices.date",
-        	"amount": "$invoices.amount",
-            "status": "$invoices.status",
-            "expirationDate": "$invoices.expirationDate",
-            "payDate": "$invoices.payDate",
-            "observations": "$invoices.observations",
-        	"id": "$invoices.id",
-        	"documentType": 1,
-        	//"observations0": 1
-        }},
+        { "$match": { "businessPartnerId": mongoose.Types.ObjectId(businessPartnerId) } },
+        { "$match": { "documentType": documentType } },
+        { "$sort": { "date": -1 } },
+        { "$unwind": "$invoices" },
+        { "$match": { "invoices.status": status } },
+        {
+            "$project": {
+                "_id": 0,
+                "businessPartnerId": 1,
+                "documentNumber": "$invoices.documentNumber",
+                "date": "$invoices.date",
+                "amount": "$invoices.amount",
+                "status": "$invoices.status",
+                "expirationDate": "$invoices.expirationDate",
+                "payDate": "$invoices.payDate",
+                "observations": "$invoices.observations",
+                "id": "$invoices.id",
+                "documentType": 1,
+                //"observations0": 1
+            }
+        },
     ], (err, result) => {
-        if(err) return console.log(err);
+        if (err) return console.log(err);
         console.log(result);
     });
-    Documents.aggregatePaginate(aggregate, {page: page, limit: limit}, (err, result, pageCount, count) => {
-        if(err) {
+    Documents.aggregatePaginate(aggregate, { page: page, limit: limit }, (err, result, pageCount, count) => {
+        if (err) {
             console.error(err);
             return next(err);
         }
         // Response with JSON in this standard format
-        res.json({"docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount});
+        res.json({ "docs": result, "total": count, "limit": limit, "page": page, "pages": pageCount });
         // Close the connection
         req.onSend();
     });
@@ -1397,8 +1434,8 @@ exports.list = (req, res, next) => {
     var page = queries.page;
     limit = parseInt(queries.limit, 10);
     var Documents = req.modelFactory.get('Documents');
-    Documents.paginate({status: 0}, {page: page, limit: limit}, (err, result) => {
-        if(err) {
+    Documents.paginate({ status: 0 }, { page: page, limit: limit }, (err, result) => {
+        if (err) {
             console.error(err);
             return next(err);
         }
@@ -1412,8 +1449,8 @@ exports.search = (req, res, next) => {
     var search = queries.search;
     limit = parseInt(queries.limit, 10);
     var Documents = req.modelFactory.get('Documents');
-    Documents.find({"status": 0, "documentNumber": {"$regex": ".*" + query + ".*", "$options": 'i'}}, (err, result) => {
-        if(err) {
+    Documents.find({ "status": 0, "documentNumber": { "$regex": ".*" + query + ".*", "$options": 'i' } }, (err, result) => {
+        if (err) {
             console.error(err);
             return next(err);
         }
@@ -1425,11 +1462,11 @@ exports.search = (req, res, next) => {
 exports.delete = (req, res, next) => {
     var id = req.params.id;
     var Documents = req.modelFactory.get('Documents');
-    Documents.update({_id: id}, {$set: {"status": 1}}, (err, result) => {
-        if(err) {
+    Documents.update({ _id: id }, { $set: { "status": 1 } }, (err, result) => {
+        if (err) {
             console.error(err);
             return next(err);
         }
-        res.json({'status': 1});
+        res.json({ 'status': 1 });
     });
 }
